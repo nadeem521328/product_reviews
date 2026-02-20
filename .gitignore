@@ -1,0 +1,22 @@
+# Virtual environment
+.venv/
+
+# Node
+frontend/node_modules/
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Environment file
+.env
+
+# Models
+*.pt
+*.bin
+*.pkl
+*.h5
