@@ -1,56 +1,39 @@
 import React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#4caf50', '#ff9800', '#f44336'];
 
-const SentimentCharts = ({ aspectBreakdown }) => {
-  const pieData = [
-    { name: 'Positive', value: Object.values(aspectBreakdown).reduce((sum, aspect) => sum + aspect.positive, 0) },
-    { name: 'Negative', value: Object.values(aspectBreakdown).reduce((sum, aspect) => sum + aspect.negative, 0) },
+const SentimentCharts = ({ summary }) => {
+  const data = [
+    { name: 'Positive', value: summary?.positive || 0 },
+    { name: 'Neutral', value: summary?.neutral || 0 },
+    { name: 'Negative', value: summary?.negative || 0 },
   ];
 
-  const barData = Object.entries(aspectBreakdown).map(([aspect, counts]) => ({
-    aspect: aspect.charAt(0).toUpperCase() + aspect.slice(1),
-    positive: counts.positive,
-    negative: counts.negative,
-  }));
-
   return (
-    <Card>
+    <Card sx={{ height: 300 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Visual Analytics
+          Sentiment Distribution
         </Typography>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
-              data={pieData}
+              data={data}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
-              fill="#8884d8"
+              outerRadius={60}
               dataKey="value"
+              nameKey="name"
             >
-              {pieData.map((entry, index) => (
+              {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={barData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="aspect" />
-            <YAxis />
-            <Tooltip />
             <Legend />
-            <Bar dataKey="positive" fill="#8884d8" />
-            <Bar dataKey="negative" fill="#82ca9d" />
-          </BarChart>
+          </PieChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>

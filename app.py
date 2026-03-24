@@ -40,19 +40,11 @@ def analyze_review():
     
     aspects = list(all_aspects)
 
-    # Analyze sentiment for each review separately (avoids token limit)
-    positive_count = 0
-    neutral_count = 0
-    negative_count = 0
-    
-    for review in reviews_list:
-        result = sentiment_analyzer(review)[0]
-        if result['label'] == 'positive':
-            positive_count += 1
-        elif result['label'] == 'neutral':
-            neutral_count += 1
-        else:
-            negative_count += 1
+    # Use thresholded individual analysis for consistent neutral detection
+    individual_results, summary = analyze_individual_sentiments(review_text)
+    positive_count = summary['positive']
+    neutral_count = summary['neutral']
+    negative_count = summary['negative']
     
     # Determine overall sentiment based on majority
     if positive_count >= neutral_count and positive_count >= negative_count:
@@ -86,8 +78,7 @@ def analyze_review():
     overall_negative = negative_count
 
 
-    # Individual sentiments
-    individual_results, summary = analyze_individual_sentiments(review_text)
+    # Individual sentiments already computed above
 
     # Generate AI feedback for customers say
     customers_say = generate_customers_say(summary)

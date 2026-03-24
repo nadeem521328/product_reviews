@@ -19,29 +19,37 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Analysis Dashboard
-      </Typography>
+      <Box sx={{ textAlign: 'center', mb: 6, mt: 2 }}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{ color: 'primary.main', fontWeight: 800 }}>
+          Analysis Dashboard
+        </Typography>
+        {data.product_name && (
+          <Typography variant="h5" color="text.secondary">
+            {data.product_name}
+          </Typography>
+        )}
+      </Box>
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
           <OverallSentiment data={data} />
         </Grid>
-        
+        <Grid item xs={12} md={6}>
+          <SentimentCharts summary={data.summary} />
+        </Grid>
         <Grid item xs={12} md={6}>
           <TotalReviews reviews={data.reviews} summary={data.summary} />
         </Grid>
-
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={6}>
           <ReviewsList reviews={data.reviews} />
         </Grid>
-
         <Grid item xs={12}>
           <IndividualSentiments individualSentiments={data.individual_sentiments} />
-
         </Grid>
-        <Grid item xs={12} >
-          <CustomersSay customersSay={data.customers_say} />
-        </Grid>
+        {data.customers_say && (
+          <Grid item xs={12}>
+            <CustomersSay customersSay={data.customers_say} />
+          </Grid>
+        )}
       </Grid>
     </Container>
   );

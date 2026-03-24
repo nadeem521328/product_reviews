@@ -18,19 +18,37 @@ const OverallSentiment = ({ data }) => {
 
   const getSentimentColor = () => {
     const sentiment = getOverallSentiment();
-    if (sentiment === 'Mostly Positive') return 'green';
-    if (sentiment === 'Mostly Negative') return 'red';
-    if (sentiment === 'Mostly Neutral') return 'orange';
-    return 'gray';
+    if (sentiment === 'Mostly Positive') return 'sentiment.positive';
+    if (sentiment === 'Mostly Negative') return 'sentiment.negative';
+    if (sentiment === 'Mostly Neutral') return 'sentiment.neutral';
+    return 'sentiment.mixed';
+  };
+
+  const SentimentIcon = ({ sentiment }) => {
+    if (sentiment === 'Mostly Positive') return '😊';
+    if (sentiment === 'Mostly Negative') return '😞';
+    if (sentiment === 'Mostly Neutral') return '😐';
+    return '🤔';
   };
 
   return (
-    <Card sx={{ minHeight: 140 }}>
-      <CardContent>
+    <Card sx={{ 
+      minHeight: 200, 
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center'
+    }}>
+      <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="h6" gutterBottom>
           Overall Sentiment
         </Typography>
-        <Typography variant="h4" color={getSentimentColor()}>
+        <Box sx={{ fontSize: 64, mb: 2 }}>
+          <SentimentIcon sentiment={getOverallSentiment()} />
+        </Box>
+        <Typography variant="h3" color={getSentimentColor()} gutterBottom sx={{ fontWeight: 800 }}>
           {getOverallSentiment()}
         </Typography>
         <Typography variant="body2" color="textSecondary">

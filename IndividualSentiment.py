@@ -7,6 +7,15 @@ from sentiment_model import load_sentiment_model
 sentiment_analyzer = load_sentiment_model()
 
 
+def classify_with_threshold(result, threshold=0.60):
+    """
+    Classify low-confidence predictions as neutral to fix model bias against neutral labels.
+    """
+    if result['score'] < threshold:
+        return 'neutral', result['score']
+    return result['label'], result['score']
+
+
 def analyze_individual_sentiments(review_text):
     # Each new line = one review
     reviews = [line.strip() for line in review_text.split('\n') if line.strip()]
@@ -21,19 +30,19 @@ def analyze_individual_sentiments(review_text):
         # Skip very long reviews to avoid token limit
         if len(review) > 500:
             continue
-            
         result = sentiment_analyzer(review)[0]
+        sentiment, confidence = classify_with_threshold(result)
 
         individual_results.append({
             'review_number': i,
             'text': review,
-            'sentiment': result['label'],
-            'confidence': round(result['score'], 2)
+            'sentiment': sentiment,
+            'confidence': round(confidence, 2)
         })
 
-        if result["label"] == "positive":
+        if sentiment == "positive":
             positive += 1
-        elif result["label"] == "neutral":
+        elif sentiment == "neutral":
             neutral += 1
         else:
             negative += 1
@@ -59,11 +68,11 @@ if __name__ == "__main__":
 
     individual_results, summary = analyze_individual_sentiments(review_text)
 
-    print("\nSentiment Analysis Results Individually:\n")
+    print("\\nSentiment Analysis Results Individually:\\n")
 
     for result in individual_results:
         print(f"Review {result['review_number']}: {result['text']}")
-        print(f"Sentiment: {result['sentiment']}, Confidence: {result['confidence']:.2f}\n")
+        print(f"Sentiment: {result['sentiment']}, Confidence: {result['confidence']:.2f}\\n")
 
     print("SUMMARY")
     print("-------")
@@ -71,3 +80,4 @@ if __name__ == "__main__":
     print(f"Positive      : {summary['positive']}")
     print(f"Neutral       : {summary['neutral']}")
     print(f"Negative      : {summary['negative']}")
+
