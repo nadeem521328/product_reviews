@@ -6,25 +6,25 @@ const IndividualSentiments = ({ individualSentiments }) => {
     <Card>
       <CardContent>
         <Typography variant="h6" component="div" gutterBottom>
-          Individual Sentiment Analysis
+          Individual Sentiment Analysis ({individualSentiments.length} reviews)
         </Typography>
-        <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+        <TableContainer component={Paper} sx={{ maxHeight: 600, overflow: 'auto' }}>
           <Table stickyHeader>
             <TableHead>
-              <TableRow>
-                <TableCell>Review #</TableCell>
-                  <TableCell sx={{ minWidth: 400 }}>Review Text</TableCell>
-                <TableCell>Sentiment</TableCell>
-                <TableCell>Confidence</TableCell>
-                <TableCell>Stars</TableCell>
+              <TableRow sx={{ fontWeight: 'bold' }}>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>S.NO</TableCell>
+                <TableCell sx={{ minWidth: 200, fontWeight: 'bold', fontSize: '1rem' }} align="left">Review Text</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Sentiment</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Confidence</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>Star Rating</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {individualSentiments.slice(0, 10).map((result) => ( // Limit to 10 for better perf
+              {individualSentiments.map((result) => (
                 <TableRow key={result.review_number} hover>
                   <TableCell>{result.review_number}</TableCell>
                   <TableCell>
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', maxWidth: 400 }}>
                       {result.text}
                     </Typography>
                   </TableCell>
@@ -33,7 +33,7 @@ const IndividualSentiments = ({ individualSentiments }) => {
                       px: 2, py: 0.5, borderRadius: 2, 
                       bgcolor: result.sentiment === 'positive' ? 'sentiment.positive.main' : 
                                result.sentiment === 'negative' ? 'sentiment.negative.main' : 'sentiment.neutral.main',
-                      color: 'black',
+                      color: 'white',
                       fontSize: '0.875rem'
                     }}>
                       {result.sentiment}
@@ -43,15 +43,6 @@ const IndividualSentiments = ({ individualSentiments }) => {
                   <TableCell>{result.star_display || '⭐'.repeat(result.star_rating || 0) + '☆'.repeat(5 - (result.star_rating || 0))}</TableCell>
                 </TableRow>
               ))}
-              {individualSentiments.length > 10 && (
-                <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ p: 2 }}>
-                    <Typography variant="body2" color="textSecondary">
-                      Showing first 10 of {individualSentiments.length} reviews
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -61,3 +52,4 @@ const IndividualSentiments = ({ individualSentiments }) => {
 };
 
 export default IndividualSentiments;
+

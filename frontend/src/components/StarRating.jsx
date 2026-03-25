@@ -11,22 +11,42 @@ const StarRating = ({ data, reviews }) => {
   const starDisplay = '⭐'.repeat(avgStars) + '☆'.repeat(5 - avgStars);
 
   return (
-    <Card sx={{ minHeight: 120 }}>
-      <CardContent sx={{ textAlign: 'center' }}>
-        <Typography variant="h6" gutterBottom>
-          Star Rating
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
-          <Typography variant="h4" fontWeight="bold">
-            {averageRating}
+    <Card sx={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <CardContent sx={{ 
+        width: '100%', 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        p: 2,
+        textAlign: 'center'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: 1, 
+          flexWrap: 'nowrap',
+          mb: 0.5
+        }}>
+          <Typography variant="h4" fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+            Star Rating :
           </Typography>
-          <Typography variant="h5">
+          <Typography variant="h5" fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+            [ {averageRating} / 5 ]
+          </Typography>
+          <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>
             {starDisplay}
           </Typography>
         </Box>
+        <Typography variant="body2" color="text.secondary">
+          Based on {reviews?.length || 0} reviews analysed
+        </Typography>
       </CardContent>
     </Card>
   );
 };
 
 export default StarRating;
+

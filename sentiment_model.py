@@ -15,35 +15,27 @@ CACHE_DIR = "./model_cache"
 def load_sentiment_model():
     """
     Load sentiment analysis model from local cache or use offline mode.
+    Using NLPTown model for better product review analysis.
     """
-    model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
     
-    # First, try to load from local cache (offline mode)
+    # Force online load for now to get the new model
     try:
-        print(f"Loading model from local cache: {CACHE_DIR}")
-        return pipeline(
-            "sentiment-analysis",
-            model=model_name,
-            local_files_only=True
-        )
-    except Exception as cache_error:
-        print(f"Cannot load from cache: {cache_error}")
-    
-    # If cache fails, try without local_files_only (might work if network is available)
-    try:
-        print("Trying to load model (online mode)...")
+        print(f"Loading NLPTown sentiment model: {model_name}")
         return pipeline(
             "sentiment-analysis",
             model=model_name
         )
-    except Exception as online_error:
-        print(f"Online load failed: {online_error}")
+    except Exception as e:
+        print(f"Failed to load NLPTown model: {e}")
+        print("Falling back to CardiffNLP model...")
         
-    # If both fail, raise a helpful error
-    raise Exception(
-        "Failed to load sentiment model.\n"
-        "Options to fix:\n"
-        "1. Check your internet connection\n"
-        "2. Run 'python download_model.py' to download the model\n"
-        "3. Make sure you can access https://huggingface.co"
-    )
+        try:
+            return pipeline(
+                "sentiment-analysis",
+                model="cardiffnlp/twitter-roberta-base-sentiment-latest"
+            )
+        except Exception as e2:
+            raise Exception(f"Failed to load any sentiment model: {e2}")
+    
+    raise Exception("Failed to load sentiment model")

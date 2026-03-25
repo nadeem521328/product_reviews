@@ -12,7 +12,8 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
 def download_model():
-    model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    # Try the better general sentiment model first
+    model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
     cache_dir = "./model_cache"
     
     print(f"Downloading model: {model_name}")
@@ -21,13 +22,42 @@ def download_model():
     # Create cache directory
     os.makedirs(cache_dir, exist_ok=True)
     
-    # Download tokenizer
-    print("Downloading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        cache_dir=cache_dir
-    )
-    print("Tokenizer downloaded successfully!")
+    try:
+        # Download tokenizer
+        print("Downloading tokenizer...")
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir
+        )
+        print("Tokenizer downloaded successfully!")
+        
+        # Download model
+        print("Downloading model...")
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            cache_dir=cache_dir
+        )
+        print("Model downloaded successfully!")
+        
+    except Exception as e:
+        print(f"Failed to download {model_name}: {e}")
+        print("Trying fallback model...")
+        
+        # Fallback to CardiffNLP model
+        model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+        print(f"Downloading fallback model: {model_name}")
+        
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir
+        )
+        print("Fallback tokenizer downloaded successfully!")
+        
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            cache_dir=cache_dir
+        )
+        print("Fallback model downloaded successfully!")
     
     # Download model
     print("Downloading model...")

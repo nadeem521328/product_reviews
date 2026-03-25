@@ -25,10 +25,10 @@ const TotalReviews = ({ reviews, summary }) => {
       <CardContent sx={{ flexGrow: 1 }}>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <Typography variant="h6" align="left">
+            <Typography variant="h6" align="center">
               Total Reviews
             </Typography>
-            <Typography variant="h3" color="primary" align="left">
+            <Typography variant="h3" color="primary" align="center">
               {totalReviews}
             </Typography>
           </Grid>

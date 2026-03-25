@@ -9,11 +9,35 @@ sentiment_analyzer = load_sentiment_model()
 
 def classify_with_threshold(result, threshold=0.70):
     """
-    Classify low-confidence predictions as neutral to fix model bias against neutral labels.
+    Map model labels to standard sentiment labels.
+    Handles different model formats:
+    - CardiffNLP: LABEL_0=negative, LABEL_1=neutral, LABEL_2=positive or Negative/Neutral/Positive
+    - NLPTown: 1 star=negative, 2 star=negative, 3 star=neutral, 4 star=positive, 5 star=positive
     """
-    if result['score'] < threshold:
-        return 'neutral', result['score']
-    return result['label'], result['score']
+    label = result['label']
+    score = result['score']
+
+    # Handle NLPTown model (star ratings)
+    if 'star' in label:
+        stars = int(label.split()[0])  # Extract number from "1 star", "2 stars", etc.
+        if stars <= 2:
+            sentiment = 'negative'
+        elif stars == 3:
+            sentiment = 'neutral'
+        else:  # 4-5 stars
+            sentiment = 'positive'
+    # Handle CardiffNLP model
+    elif label == 'LABEL_0' or label == 'Negative' or label.lower() == 'negative':
+        sentiment = 'negative'
+    elif label == 'LABEL_1' or label == 'Neutral' or label.lower() == 'neutral':
+        sentiment = 'neutral'
+    elif label == 'LABEL_2' or label == 'Positive' or label.lower() == 'positive':
+        sentiment = 'positive'
+    else:
+        # Fallback
+        sentiment = label.lower()
+
+    return sentiment, score
 
 
 def analyze_individual_sentiments(review_text):

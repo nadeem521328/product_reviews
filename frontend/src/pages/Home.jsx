@@ -14,7 +14,7 @@ const Home = () => {
         Analyze individual reviews through advanced sentiment analysis.
       </Typography>
       <Typography variant="body1" sx={{ mb: 4 }}>
-        Our system analyzes a single review to provide insights into overall sentiment, aspect-based feedback, and a summarized "Customers Say" overview.
+        Our system analyzes a single review to provide insights into overall sentiment, star rating,individual sentiment and a summarized "Customers Say" overview.
       </Typography>
       <Box>
         <Button variant="contained" size="large" onClick={() => navigate('/search')}>

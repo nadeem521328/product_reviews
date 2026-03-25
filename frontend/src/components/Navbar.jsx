@@ -13,8 +13,8 @@ const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
-          Sentiment Analyzer
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }} align='center'>
+                  Sentiment Analyzer
         </Typography>
         <Button color="inherit" onClick={() => navigate('/')}>
           Home
