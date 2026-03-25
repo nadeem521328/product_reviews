@@ -14,6 +14,7 @@ from sentiment_model import load_sentiment_model
 from IndividualSentiment import analyze_individual_sentiments
 from feedback_generator import generate_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
+import pandas as pd
 
 
 app = Flask(__name__)
@@ -123,6 +124,32 @@ def analyze_review():
     }
 
     return jsonify(response_data)
+
+@app.route('/analyze-csv', methods=['POST'])
+def analyze_csv():
+    if 'csv_file' not in request.files:
+        return jsonify({'error': 'No CSV file provided'}), 400
+
+    file = request.files['csv_file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    try:
+        df = pd.read_csv(file)
+
+        required_col = 'reviews.text'
+        if required_col not in df.columns:
+            return jsonify({'error': f"Missing required column '{required_col}' in CSV."}), 400
+
+        reviews = df[required_col].astype(str).tolist()
+        if not reviews:
+            return jsonify({'error': f"No data found in column '{required_col}'."}), 400
+
+        # Return only the extracted review texts
+        return jsonify({'reviews': reviews, 'count': len(reviews)})
+
+    except Exception as e:
+        return jsonify({'error': f'Error processing CSV: {str(e)}'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -27,10 +27,10 @@ def analyze_individual_sentiments(review_text):
     individual_results = []
 
     for i, review in enumerate(reviews, start=1):
-        # Skip very long reviews to avoid token limit
-        if len(review) > 500:
-            continue
-        result = sentiment_analyzer(review)[0]
+        # Truncate very long reviews to 512 tokens (~2000 chars) to avoid token limit
+        # Sentiment models typically have 512 token limit
+        review_to_analyze = review[:2000] if len(review) > 2000 else review
+        result = sentiment_analyzer(review_to_analyze)[0]
         sentiment, confidence = classify_with_threshold(result)
 
         individual_results.append({
