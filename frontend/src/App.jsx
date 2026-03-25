@@ -1,14 +1,18 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
+import { ThemeProviderWrapper, useThemeContext } from './contexts/ThemeContext';
+import { getTheme } from './theme';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
-import theme from './theme';
 import './App.css';
 
-function App() {
+function InnerApp() {
+  const { mode } = useThemeContext();
+  const theme = getTheme(mode);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -23,6 +27,14 @@ function App() {
         </div>
       </Router>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProviderWrapper>
+      <InnerApp />
+    </ThemeProviderWrapper>
   );
 }
 

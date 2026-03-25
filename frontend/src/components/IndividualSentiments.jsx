@@ -13,7 +13,7 @@ const IndividualSentiments = ({ individualSentiments }) => {
             <TableHead>
               <TableRow>
                 <TableCell>Review #</TableCell>
-                <TableCell sx={{ minWidth: 200 }}>Text (truncated)</TableCell>
+                  <TableCell sx={{ minWidth: 400 }}>Review Text</TableCell>
                 <TableCell>Sentiment</TableCell>
                 <TableCell>Confidence</TableCell>
                 <TableCell>Stars</TableCell>
@@ -23,9 +23,9 @@ const IndividualSentiments = ({ individualSentiments }) => {
               {individualSentiments.slice(0, 10).map((result) => ( // Limit to 10 for better perf
                 <TableRow key={result.review_number} hover>
                   <TableCell>{result.review_number}</TableCell>
-                  <TableCell sx={{ maxWidth: 200 }}>
-                    <Typography variant="body2" noWrap title={result.text}>
-                      {result.text.length > 50 ? `${result.text.slice(0, 50)}...` : result.text}
+                  <TableCell>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                      {result.text}
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ fontWeight: 'semiBold' }}>

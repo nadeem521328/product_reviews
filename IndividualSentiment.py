@@ -7,7 +7,7 @@ from sentiment_model import load_sentiment_model
 sentiment_analyzer = load_sentiment_model()
 
 
-def classify_with_threshold(result, threshold=0.60):
+def classify_with_threshold(result, threshold=0.70):
     """
     Classify low-confidence predictions as neutral to fix model bias against neutral labels.
     """
