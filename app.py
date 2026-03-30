@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 from datetime import timedelta
 from templates import detect_aspects
-from model_loader import get_sentiment_analyzer
+from sentiment_model_fixed import load_sentiment_model
 from feedback_generator import generate_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
 import pandas as pd
@@ -31,7 +31,9 @@ jwt = JWTManager(app)
 
 CORS(app, origins=["http://localhost:5173"])  # Enable CORS for Vite frontend
 
-sentiment_analyzer = get_sentiment_analyzer()
+# Fixed model loader (offline cache)
+sentiment_analyzer = load_sentiment_model()
+print(f"App startup analyzer: {sentiment_analyzer is not None}")
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -87,12 +89,16 @@ def login():
 @app.route('/analyze-review', methods=['POST'])
 def analyze_review():
     print("=== DEBUG /analyze-review ===")
+    print(f"DEBUG: sentiment_analyzer active: {sentiment_analyzer is not None}")
     print(f"Authorization: '{request.headers.get('Authorization')}'")
     print(f"Content-Type: '{request.headers.get('Content-Type')}'")
     print(f"All headers: {dict(request.headers)}")
     print("============================")
     data = request.get_json()
     review_text = data.get('review_text', '')
+
+    # Split reviews and analyze individually (to avoid 512 token limit)
+    reviews_list = [line.strip() for line in review_text.split('\n') if line.strip()]
 
     if not review_text:
         return jsonify({'error': 'No review text provided'}), 400
@@ -144,6 +150,7 @@ def analyze_review():
         else:
             result = sentiment_analyzer(review_to_analyze)[0]
             sentiment, confidence = classify_with_threshold(result)
+            print(f"DEBUG Review {i}: raw={result}, classified={sentiment}({confidence:.3f})")
         individual_results.append({
             'review_number': i,
             'text': review,
@@ -163,6 +170,7 @@ def analyze_review():
         'neutral': neutral,
         'negative': negative
     }
+    print(f"DEBUG Final summary: {summary}")
     positive_count = positive
     neutral_count = neutral
     negative_count = negative

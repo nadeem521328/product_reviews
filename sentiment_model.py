@@ -9,25 +9,28 @@ logging.set_verbosity_error()
 
 # Local cache directory
 CACHE_DIR = "./model_cache"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 
 def load_sentiment_model():
     """
-    Load sentiment analysis model from local cache or use offline mode.
-    Using Twitter-RoBERTa-base-sentiment (optimized for reviews).
+    Load sentiment analysis model from CACHE (offline only - fixes expired HF token).
     """
+    # Robust public model - no auth issues
     model_name = "cardiffnlp/twitter-roberta-base-sentiment"
-    print("✓ Using Twitter-RoBERTa-base-sentiment (optimized for reviews)")
-    cache_dir = "./model_cache"
+    print("✓ Loading cached Twitter-RoBERTa (offline mode - no HF auth needed)")
+    cache_dir = CACHE_DIR
     try:
-        print(f"Loading sentiment model: {model_name}")
+        print("✓ Loading cached Twitter-RoBERTa (offline mode)")
         return pipeline(
             "sentiment-analysis",
             model=model_name,
             cache_dir=cache_dir,
-            trust_remote_code=False
+            local_files_only=True
         )
     except Exception as e:
         print(f"Failed to load sentiment model: {e}")
-        print("Using full fallback logic.")
+        print("Using fallback logic.")
         return None
+
