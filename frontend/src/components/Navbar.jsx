@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Switch, FormControlLabel, useTheme, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useThemeContext } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
@@ -9,6 +10,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeContext();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <AppBar position="static">
@@ -16,12 +18,21 @@ const Navbar = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }} align='center'>
                   Sentiment Analyzer
         </Typography>
-        <Button color="inherit" onClick={() => navigate('/')}>
+        <Button color="inherit" onClick={() => navigate('/')} >
           Home
         </Button>
         <Button color="inherit" onClick={() => navigate('/search')}>
           Analyze
         </Button>
+        {isAuthenticated() ? (
+          <Button color="inherit" onClick={logout}>
+            Logout
+          </Button>
+        ) : (
+          <Button color="inherit" onClick={() => navigate('/login')}>
+            Login
+          </Button>
+        )}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <FormControlLabel
             control={

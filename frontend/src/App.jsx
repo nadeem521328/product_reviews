@@ -1,13 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { ThemeProviderWrapper, useThemeContext } from './contexts/ThemeContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { getTheme } from './theme';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
 import Navbar from './components/Navbar';
 import './App.css';
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+};
 
 function InnerApp() {
   const { mode } = useThemeContext();
@@ -20,9 +27,11 @@ function InnerApp() {
         <div className="App">
           <Navbar />
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           </Routes>
         </div>
       </Router>
@@ -33,7 +42,9 @@ function InnerApp() {
 function App() {
   return (
     <ThemeProviderWrapper>
-      <InnerApp />
+      <AuthProvider>
+        <InnerApp />
+      </AuthProvider>
     </ThemeProviderWrapper>
   );
 }

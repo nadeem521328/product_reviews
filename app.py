@@ -3,27 +3,94 @@ import os
 
 # Fix for Unicode encoding issues on Windows
 if os.name == 'nt':  # Windows
-    import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
+from datetime import timedelta
 from templates import detect_aspects
-from sentiment_model import load_sentiment_model
-from IndividualSentiment import analyze_individual_sentiments
+from model_loader import get_sentiment_analyzer
 from feedback_generator import generate_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
 import pandas as pd
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'your-super-secret-jwt-key-change-in-prod'  # Change in prod
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
-sentiment_analyzer = load_sentiment_model()
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+CORS(app, origins=["http://localhost:5173"])  # Enable CORS for Vite frontend
+
+sentiment_analyzer = get_sentiment_analyzer()
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+with app.app_context():
+    db.create_all()
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already registered'}), 400
+
+    user = User(
+        email=email,
+        password_hash=generate_password_hash(password)
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({
+        'message': 'User registered successfully',
+        'access_token': access_token
+    }), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password_hash, password):
+        access_token = create_access_token(identity=user.id)
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token
+        })
+    return jsonify({'error': 'Invalid credentials'}), 401
 
 @app.route('/analyze-review', methods=['POST'])
 def analyze_review():
+    print("=== DEBUG /analyze-review ===")
+    print(f"Authorization: '{request.headers.get('Authorization')}'")
+    print(f"Content-Type: '{request.headers.get('Content-Type')}'")
+    print(f"All headers: {dict(request.headers)}")
+    print("============================")
     data = request.get_json()
     review_text = data.get('review_text', '')
 
@@ -41,11 +108,64 @@ def analyze_review():
     
     aspects = list(all_aspects)
 
-    # Use thresholded individual analysis for consistent neutral detection
-    individual_results, summary = analyze_individual_sentiments(review_text)
-    positive_count = summary['positive']
-    neutral_count = summary['neutral']
-    negative_count = summary['negative']
+    # Inline individual sentiment analysis for consistent neutral detection
+    def classify_with_threshold(result):
+        label = result['label']
+        score = result['score']
+        if 'star' in label:
+            stars = int(label.split()[0])
+            if stars <= 2:
+                sentiment = 'negative'
+            elif stars == 3:
+                sentiment = 'neutral'
+            else:
+                sentiment = 'positive'
+        elif label == 'LABEL_0' or label == 'Negative' or label.lower() == 'negative':
+            sentiment = 'negative'
+        elif label == 'LABEL_1' or label == 'Neutral' or label.lower() == 'neutral':
+            sentiment = 'neutral'
+        elif label == 'LABEL_2' or label == 'Positive' or label.lower() == 'positive':
+            sentiment = 'positive'
+        else:
+            sentiment = label.lower()
+        return sentiment, score
+
+    reviews = [line.strip() for line in review_text.split('\n') if line.strip()]
+    positive = 0
+    neutral = 0
+    negative = 0
+    individual_results = []
+
+    for i, review in enumerate(reviews, start=1):
+        review_to_analyze = review[:2000] if len(review) > 2000 else review
+        if sentiment_analyzer is None:
+            sentiment = 'neutral'
+            confidence = 0.5
+        else:
+            result = sentiment_analyzer(review_to_analyze)[0]
+            sentiment, confidence = classify_with_threshold(result)
+        individual_results.append({
+            'review_number': i,
+            'text': review,
+            'sentiment': sentiment,
+            'confidence': round(confidence, 2)
+        })
+        if sentiment == "positive":
+            positive += 1
+        elif sentiment == "neutral":
+            neutral += 1
+        else:
+            negative += 1
+
+    summary = {
+        'total_reviews': len(reviews),
+        'positive': positive,
+        'neutral': neutral,
+        'negative': negative
+    }
+    positive_count = positive
+    neutral_count = neutral
+    negative_count = negative
     
     # Determine overall sentiment based on majority
     if positive_count >= neutral_count and positive_count >= negative_count:
@@ -126,6 +246,7 @@ def analyze_review():
     return jsonify(response_data)
 
 @app.route('/analyze-csv', methods=['POST'])
+@jwt_required()
 def analyze_csv():
     if 'csv_file' not in request.files:
         return jsonify({'error': 'No CSV file provided'}), 400

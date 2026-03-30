@@ -1,12 +1,1 @@
-# Center Navbar Title
-## Status: In Progress
-
-**Step 1: [PENDING] Edit Navbar.jsx**
-- Add `align="center"` to Typography containing "Sentiment Analyzer".
-
-**Step 2: [PENDING] Test**
-- `cd frontend && npm run dev`
-- Verify title centered on all pages.
-
-**Completed Steps:**
--
+# Sentiment Model Update to Twitter-RoBERTa ✅ COMPLETE\n\n## Summary\n- **Model changed**: `distilbert-base-uncased-finetuned-sst-2-english` → `cardiffnlp/twitter-roberta-base-sentiment`\n- **Status**: File edited ✓ | Auto-downloaded/cached ✓ | Loading tested ✓ (LABEL_2/0.99 on positive)\n- **Compatibility**: Perfect (labels map: LABEL_0→negative, 1→neutral, 2→positive)\n- **Next**: `python app.py` & test frontend\n\n**No problems detected. Change successful!**

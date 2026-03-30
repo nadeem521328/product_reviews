@@ -6,6 +6,15 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Dynamic auth interceptor - syncs with AuthContext token changes
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const analyzeProduct = async (productId) => {
   try {
     const response = await api.post('/analyze-product', { product_id: productId });

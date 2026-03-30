@@ -7,16 +7,8 @@ logging.set_verbosity_error()
 
 class FeedbackGenerator:
     def __init__(self):
-        # Initialize DistilGPT-2 for text generation
-        self.generator = pipeline(
-            "text-generation",
-            model="distilgpt2",
-            max_length=150,
-            do_sample=True,
-            temperature=0.7,
-            top_p=0.9,
-            truncation=True
-        )
+        self.generator = None  # Disabled due to HF token issues
+        print("FeedbackGenerator initialized with template fallback (no HF model)")
     
     def generate_feedback(self, summary_data, sample_reviews=None):
         """
@@ -37,7 +29,7 @@ class FeedbackGenerator:
         # Debug print
         print(f"DEBUG - Summary data: total={total}, pos={positive}, neu={neutral}, neg={negative}")
         
-        # Always use template for reliability
+        # Use template - generator disabled
         return self._generate_template_feedback(positive, neutral, negative, total)
 
     

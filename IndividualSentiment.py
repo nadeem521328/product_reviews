@@ -4,7 +4,8 @@ os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 from sentiment_model import load_sentiment_model
 
 # Load sentiment analysis model
-sentiment_analyzer = load_sentiment_model()
+# sentiment_analyzer loaded in app.py now - imported globally
+from app import sentiment_analyzer
 
 
 def classify_with_threshold(result, threshold=0.70):
