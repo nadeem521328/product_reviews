@@ -1,19 +1,19 @@
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Container, Typography, Grid, Card, CardContent, Box } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { Container, Typography, Grid, Card, CardContent, Box, Button } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
 import OverallSentiment from '../components/OverallSentiment';
 import CustomersSay from '../components/CustomersSay';
 import AspectTable from '../components/AspectTable';
 import SentimentCharts from '../components/SentimentCharts';
 import ReviewsList from '../components/ReviewsList';
 import TotalReviews from '../components/TotalReviews';
-import IndividualSentiments from '../components/IndividualSentiments';
 import StarRating from '../components/StarRating';
 
 const Dashboard = () => {
   const theme = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const data = location.state?.data;
 
   if (!data) {
@@ -56,10 +56,19 @@ const Dashboard = () => {
           <SentimentCharts summary={data.summary} />
         </Grid>
         <Grid item xs={12}>
-          <ReviewsList reviews={data.reviews} />
+          <Box sx={{ textAlign: 'center', mb: 6, mt: 2, borderRadius: 3, backgroundColor: 'background.paper', boxShadow: 1 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => navigate('/individual-sentiments', { state: { data } })}
+              sx={{ py: 3, px: 3, borderRadius: 3 }}
+            >
+              View Individual Sentiment Analysis
+            </Button>
+          </Box>
         </Grid>
         <Grid item xs={12}>
-          <IndividualSentiments individualSentiments={data.individual_sentiments} />
+          <ReviewsList reviews={data.reviews} />
         </Grid>
         {data.customers_say && (
           <Grid item xs={12}>

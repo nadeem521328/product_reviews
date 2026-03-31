@@ -5,8 +5,9 @@ import api, { analyzeReview } from '../services/api';
 import ReviewCounter from '../components/ReviewCounter';
 
 const Search = () => {
-  const [reviewText, setReviewText] = useState('');  const [rawData, setRawData] = useState('');  const [selectedFile, setSelectedFile] = useState(null);
-const [csvSelectedFile, setCsvSelectedFile] = useState(null);
+  const [reviewText, setReviewText] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [csvSelectedFile, setCsvSelectedFile] = useState(null);
   const [extractLoading, setExtractLoading] = useState(false);
   const [estimatedReviews, setEstimatedReviews] = useState(0);
   const [inputTooLarge, setInputTooLarge] = useState(false);
@@ -130,7 +131,7 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
   };
 
   const handleRawDataExtract = () => {
-    const raw = rawData.trim() || reviewText.trim();
+    const raw = reviewText.trim();
     if (!raw) {
       setError('Please enter raw data first.');
       return;
@@ -183,7 +184,6 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
     }
 
     setReviewText(reviews.length ? reviews.join('\n\n') : raw);
-    setRawData('');
     setError(reviews.length ? `✅ Extracted ${reviews.length} clean review(s)` : '⚠️ No structured review found; raw text kept');
   };
 
@@ -289,16 +289,6 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
         <TextField
           fullWidth
           multiline
-          rows={4}
-          label="Raw Amazon Source (optional for extraction)"
-          value={rawData}
-          onChange={(e) => setRawData(e.target.value)}
-          margin="normal"
-          sx={{ '& .MuiInputBase-input': { color: 'black' }, '& .MuiInputLabel-root': { backgroundColor: 'white', padding: '0 4px' }, '& .MuiOutlinedInput-root': { backgroundColor: 'white' } }}
-        />
-        <TextField
-          fullWidth
-          multiline
           rows={15}
           label={inputMode === 2 ? 'CSV Reviews Loaded (edit if needed)' : inputMode === 1 ? 'TXT Reviews Loaded' : 'Raw Amazon Data → Extract → Clean Reviews'}
           value={reviewText}
@@ -320,11 +310,6 @@ onChange={(e) => {
         {inputTooLarge && (
           <Alert severity="warning" sx={{ mt: 1 }}>
             Input too large ({(new TextEncoder().encode(reviewText).length / 1000).toFixed(1)} KB). Max 50KB (~30 reviews). Trim or use CSV upload.
-          </Alert>
-        )}
-        {estimatedReviews > 0 && !inputTooLarge && (
-          <Alert severity="info" sx={{ mt: 1 }}>
-            ~{estimatedReviews} reviews detected. Ready to extract.
           </Alert>
         )}
         
@@ -387,19 +372,10 @@ onChange={(e) => {
           <Button
             onClick={handleRawDataExtract}
             variant="outlined"
-            disabled={extractLoading || (rawData.trim().length === 0 && reviewText.trim().length === 0) || inputTooLarge}
+            disabled={extractLoading || reviewText.trim().length === 0 || inputTooLarge}
             sx={{ py: 1.5, minWidth: '180px' }}
           >
             Extract From Raw Text
-          </Button>
-          <Button
-            onClick={handleExtractReviews}
-            variant="outlined"
-            disabled={extractLoading || reviewText.trim().length < 50 || inputTooLarge}
-            startIcon={extractLoading ? <CircularProgress size={20} /> : null}
-            sx={{ py: 1.5, minWidth: "180px" }}
-          >
-            {extractLoading ? 'Extracting...' : 'Extract Reviews'}
           </Button>
           <Button
             type="submit"

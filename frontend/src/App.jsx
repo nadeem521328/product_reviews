@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Search from './pages/Search';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import IndividualSentimentsPage from './pages/IndividualSentimentsPage';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -32,6 +33,7 @@ function InnerApp() {
             <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/individual-sentiments" element={<ProtectedRoute><IndividualSentimentsPage /></ProtectedRoute>} />
           </Routes>
         </div>
       </Router>
