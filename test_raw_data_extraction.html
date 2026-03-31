@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Raw Data Extraction Test</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    textarea { width: 100%; height: 200px; margin: 10px 0; }
+    button { padding: 10px 20px; }
+    pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>Test Raw Data Extraction (from Search.jsx)</h2>
+  <p>Paste the Amazon reviews below and click Extract to see cleaning.</p>
+  
+  <textarea id="rawData" placeholder="Paste raw data here...">
+RAMKUMAR G
+5.0 out of 5 stars Worth for money
+Reviewed in India on 17 March 2026
+Verified Purchase
+Very Effective. Fully satisfied
+Helpful
+Report
+
+Bhavana Gaikwad
+5.0 out of 5 stars Best quality
+Reviewed in India on 23 January 2026
+Verified Purchase
+My mom's taking this multivitamin, she's 42, and we can see visible results - improvement in sleep cycle and energy levels. Definitely money worth it! 😊
+Helpful
+Report
+
+Placeholder
+1.0 out of 5 stars Stomach issues and it's chemical based
+Reviewed in India on 22 March 2026
+Verified Purchase
+It's a chemical based supplement and not natural. Gives stomach issues
+Helpful
+Report
+
+prashant gaurav
+2.0 out of 5 stars Only one ingredient is in methylated form
+Reviewed in India on 21 March 2026
+Vitamin b12 is in cobalamine form not methyle cobalamine form but the advertisement says this multivitamin is methylated multivitamin .marketing gimmick
+One person found this helpful
+Helpful
+Report
+
+gopika
+1.0 out of 5 stars No ingredient list
+Reviewed in India on 3 January 2026
+How do you sell a product without an exact ingredient list and quantities???
+No clarity in what is in the supplement. Disappointing
+5 people found this helpful
+Helpful
+Report
+
+Parul Vipul Shah
+5.0 out of 5 stars Great product
+Reviewed in India on 3 February 2026
+Verified Purchase
+Amazing product
+I see the difference in my body
+Feels good
+Helpful
+Report
+  </textarea>
+  
+  <button onclick="extractReviews()">Extract Reviews</button>
+  
+  <h3>Extracted Reviews (what goes to main textarea):</h3>
+  <pre id="output"></pre>
+  
+  <script>
+    function handleRawDataExtract() {
+      const rawData = document.getElementById('rawData').value;
+      if (!rawData.trim()) {
+        alert('Please enter raw data first.');
+        return;
+      }
+
+      // Exact logic from Search.jsx
+      let reviews = rawData.split('\n\n')
+        .map(para => para.trim())
+        .filter(para => para.length > 10)
+        .map(para => para.length > 500 ? para.substring(0, 500) + '...' : para);
+
+      if (reviews.length === 0) {
+        reviews = rawData.split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 10);
+      }
+
+      if (reviews.length === 0) {
+        document.getElementById('output').innerText = 'No valid reviews found (min 10 chars).';
+        return;
+      }
+
+      return reviews.join('\n\n');
+    }
+
+    function extractReviews() {
+      const result = handleRawDataExtract();
+      document.getElementById('output').innerText = result || 'Error occurred.';
+    }
+  </script>
+</body>
+</html>
