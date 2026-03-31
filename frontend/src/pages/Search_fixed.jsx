@@ -5,7 +5,8 @@ import api, { analyzeReview } from '../services/api';
 import ReviewCounter from '../components/ReviewCounter';
 
 const Search = () => {
-  const [reviewText, setReviewText] = useState('');  const [rawData, setRawData] = useState('');  const [selectedFile, setSelectedFile] = useState(null);
+  const [reviewText, setReviewText] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
 const [csvSelectedFile, setCsvSelectedFile] = useState(null);
   const [extractLoading, setExtractLoading] = useState(false);
   const [estimatedReviews, setEstimatedReviews] = useState(0);
@@ -129,64 +130,6 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
     reader.readAsText(file);
   };
 
-  const handleRawDataExtract = () => {
-    const raw = rawData.trim() || reviewText.trim();
-    if (!raw) {
-      setError('Please enter raw data first.');
-      return;
-    }
-
-    const reviews = [];
-    const verifiedRegex = /Verified Purchase\s*\n([\s\S]*?)(?=Customer image|Helpful|Report|\n[A-Za-z][\w\s]+?\n\d+\.\d+\s+out of 5 stars|$)/gi;
-    let m;
-    while ((m = verifiedRegex.exec(raw)) !== null) {
-      let text = m[1]
-        .replace(/\n\s*\n+/g, ' ')
-        .replace(/\b(Flavour Name:|Size:|Pack of|Reviewed in|Verified Purchase)\b/gi, '')
-        .replace(/Customer image|Helpful|Report/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      if (text.length > 10 && !text.match(/^Flavour\s*Name/i)) {
-        reviews.push(text);
-      }
-    }
-
-    if (reviews.length === 0) {
-      // Try fallback extraction from rating blocks if no Verified Purchase section found
-      const ratingRegex = /\d+\.\d+\s+out of 5 stars[\s\S]*?(?=\n[A-Za-z][\w\s]+?\n\d+\.\d+\s+out of 5 stars|$)/gi;
-      while ((m = ratingRegex.exec(raw)) !== null) {
-        let candidate = m[0]
-          .replace(/\d+\.\d+\s+out of 5 stars/gi, '')
-          .replace(/\n\s*\n+/g, ' ')
-          .replace(/(Customer image|Helpful|Report|Flavour Name:|Size:)/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (candidate.length > 10) reviews.push(candidate);
-      }
-    }
-
-    if (reviews.length === 0) {
-      // last-chance fallback: chunk by paragraphs, but avoid returning raw unchanged
-      let fallback = raw
-        .split(/\n{2,}/)
-        .map(p => p.trim())
-        .filter(p => p.length > 15 && p.toLowerCase().indexOf('out of 5 stars') === -1);
-      if (fallback.length === 0) {
-        fallback = raw
-          .split(/\n/)
-          .map(line => line.trim())
-          .filter(line => line.length > 15 && line.toLowerCase().indexOf('out of 5 stars') === -1);
-      }
-      if (fallback.length > 0) {
-        reviews.push(...fallback.slice(0, 20));
-      }
-    }
-
-    setReviewText(reviews.length ? reviews.join('\n\n') : raw);
-    setRawData('');
-    setError(reviews.length ? `✅ Extracted ${reviews.length} clean review(s)` : '⚠️ No structured review found; raw text kept');
-  };
-
   const handleExtractReviews = () => {
     let raw = reviewText.trim();
     if (raw.length < 50) {
@@ -197,33 +140,38 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
     setExtractLoading(true);
     setError('');
 
-    // Amazon-specific regex (adapted from extract_reviews.py)
-    const blocks = raw.split(/\n[A-Za-z][\w\s]+?\n\d+\.\d+\s+out of 5 stars/gi);
+    // FIXED: Python-aligned extraction with lookahead split
+    const blocks = raw.split(/(?=\n[A-Za-z][\w\s,’‘'-]+?\n[0-5]\.[0-5]\s+out of 5 stars)/gi);
     const reviews = [];
     for (let i = 1; i < blocks.length; i++) {
-      const block = blocks[i];
-      const match = block.match(/Verified Purchase\s*\n(.*?)(?=Customer image|Helpful|Report|\n\n[A-Z]|\s*$)/gis);
+      const block = blocks[i].trim();
+      // Extract after Verified Purchase, skip starting C/H/Flavour
+      const match = block.match(/Verified Purchase\s*\n([^C][^H][^F].*?)(?=Customer image|Helpful|Report|\n\n[A-Z]|$)/is);
       if (match) {
         let text = match[1]
-          .replace(/\n\s*\n+/g, ' ')
-.replace(/Flavour Name:|Size:|Customer image|Helpful.*?(?=Report|$)/gi, '')
+          .replace(/\n\s*\n/g, ' ')
+          .replace(/\b(flavour|size|customer image|helpful|report|people found)\b/gi, '')
           .trim();
-        if (text.length > 20 && !text.match(/^Flavour/i)) {
+        if (text.length > 5) {
           reviews.push(text);
+        }
+      } else {
+        // Fallback for block without Verified Purchase
+        const fbMatch = block.match(/([^\n]{10,})(?=\n\d\.\d out of|\nHelpful|$)/i);
+        if (fbMatch) {
+          let text = fbMatch[1].trim();
+          if (text.length > 10) reviews.push(text);
         }
       }
     }
 
-    // Fallback: paragraphs or lines
+    // Ultimate fallback
     if (reviews.length === 0) {
-      reviews.push(
-        ...raw.split(/\n{2,}/)
-          .map(p => p.trim())
-          .filter(p => p.length > 20)
-      );
+      const fallback = raw.split(/\n{2,}/).map(p => p.trim()).filter(p => p.length > 20);
+      reviews.push(...fallback.slice(0, 20));
     }
 
-    const cleaned = reviews.join('\n');
+    const cleaned = reviews.join('\n\n');
     setReviewText(cleaned);
     setError(`✅ Extracted ${reviews.length} clean reviews! Ready to Analyze.`);
     setExtractLoading(false);
@@ -286,16 +234,6 @@ const [csvSelectedFile, setCsvSelectedFile] = useState(null);
         
 
         
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          label="Raw Amazon Source (optional for extraction)"
-          value={rawData}
-          onChange={(e) => setRawData(e.target.value)}
-          margin="normal"
-          sx={{ '& .MuiInputBase-input': { color: 'black' }, '& .MuiInputLabel-root': { backgroundColor: 'white', padding: '0 4px' }, '& .MuiOutlinedInput-root': { backgroundColor: 'white' } }}
-        />
         <TextField
           fullWidth
           multiline
@@ -382,20 +320,12 @@ onChange={(e) => {
             )}
           </>
         )}
-        {error && <Alert severity={error.startsWith('✅') ? 'success' : 'error'} sx={{ mt: 2 }}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Button
-            onClick={handleRawDataExtract}
-            variant="outlined"
-            disabled={extractLoading || (rawData.trim().length === 0 && reviewText.trim().length === 0) || inputTooLarge}
-            sx={{ py: 1.5, minWidth: '180px' }}
-          >
-            Extract From Raw Text
-          </Button>
           <Button
             onClick={handleExtractReviews}
             variant="outlined"
-            disabled={extractLoading || reviewText.trim().length < 50 || inputTooLarge}
+disabled={extractLoading || reviewText.trim().length < 50 || inputTooLarge}
             startIcon={extractLoading ? <CircularProgress size={20} /> : null}
             sx={{ py: 1.5, minWidth: "180px" }}
           >

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Review Extraction</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    textarea { width: 100%; height: 200px; margin: 10px 0; }
+    button { padding: 10px 20px; margin: 5px; }
+    pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; border: 1px solid #ddd; }
+    .result { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Test Raw Amazon Review Extraction</h2>
+  <p>Paste your raw sample, click Extract to test JS logic from Search_fixed.jsx.</p>
+  
+  <textarea id="rawInput" placeholder="Paste raw Amazon review here...">Priya Suresh
+3.0 out of 5 stars spoiled/damaged
+Reviewed in India on 29 October 2025
+Flavour Name: CranberrySize: 30 Servings (Pack of 1)Verified Purchase
+Received spoiled/damaged socket
+Customer image
+Customer image
+Customer image
+One person found this helpful
+Helpful
+Report</textarea>
+  
+  <button onclick="extractTest()">Extract Reviews (Search_fixed logic)</button>
+  <button onclick="extractPythonStyle()">Python Style</button>
+  
+  <h3>Extracted Clean Review:</h3>
+  <pre id="output">Click Extract to test...</pre>
+  
+  <script>
+    function extractTest() {
+      const raw = document.getElementById('rawInput').value;
+      const blocks = raw.split(/(?=\\n[A-Za-z][\\w\\s,’‘'-]+?\\n[0-5]\\.[0-5]\\s+out of 5 stars)/gi);
+      const reviews = [];
+      for (let i = 1; i < blocks.length; i++) {
+        const block = blocks[i].trim();
+        const match = block.match(/Verified Purchase\\s*\\n([^C][^H][^F].*?)(?=Customer image|Helpful|Report|\\n{2,}[A-Z]|$)/is);
+        if (match) {
+          let text = match[1]
+            .replace(/\\n\\s*\\n/g, ' ')
+            .replace(/\\b(flavour|size|customer image|helpful|report|people found)\\b/gi, '')
+            .trim();
+          if (text.length > 5) {
+            reviews.push(text);
+          }
+        } else {
+          const fbMatch = block.match(/([^\\n]{10,})(?=\\n\\d\\.\\d out of|\\nHelpful|$)/i);
+          if (fbMatch) {
+            let text = fbMatch[1].trim();
+            if (text.length > 10) reviews.push(text);
+          }
+        }
+      }
+      if (reviews.length === 0) {
+        const fallback = raw.split(/\\n{2,}/).map(p => p.trim()).filter(p => p.length > 20);
+        reviews.push(...fallback.slice(0, 20));
+      }
+      document.getElementById('output').textContent = reviews.join('\\n\\n') || 'No reviews found';
+    }
+    
+    function extractPythonStyle() {
+      const raw = document.getElementById('rawInput').value;
+      const blocks = raw.split(/(?=\\n[A-Za-z][\\w\\s]+?\\n\\d+\\.\\d+\\s+out of 5 stars)/gi);
+      const reviews = [];
+      for (let i = 1; i < blocks.length; i++) {
+        const block = blocks[i];
+        const match = block.match(/Verified Purchase\\s*\\n([^C][^H].*?)(?=\\n\\n[A-Z]|Customer image|Helpful|Report|$)/is);
+        if (match) {
+          let text = match[1]
+            .replace(/\\n\\s*\\n/g, ' ')
+            .replace(/\b(helpful|report|people found).*/i, '')
+            .trim();
+          if (text.length > 5 && !text.match(/^Flavour/)) {
+            reviews.push(text);
+          }
+        }
+      }
+      document.getElementById('output').textContent = reviews.join('\\n\\n') || 'No reviews found (Python style)';
+    }
+  </script>
+</body>
+</html>
