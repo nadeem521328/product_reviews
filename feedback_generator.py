@@ -150,6 +150,68 @@ def get_feedback_generator():
     return _feedback_generator
 
 
+def generate_aspect_customers_say(aspect_breakdown, summary_data):
+    """
+    Generate narrative-style 'Customers Say' feedback based on aspects.
+    
+    Args:
+        aspect_breakdown: dict of {aspect: {positive: int, neutral: int, negative: int}}
+        summary_data: dict with total_reviews, positive, neutral, negative
+    
+    Returns:
+        str: Cohesive paragraph feedback
+    """
+    total = summary_data.get('total_reviews', 0)
+    pos = summary_data.get('positive', 0)
+    neu = summary_data.get('neutral', 0)
+    neg = summary_data.get('negative', 0)
+    
+    if total == 0:
+        return "No reviews available for analysis."
+    
+    pos_ratio = pos / total
+    neg_ratio = neg / total
+    neu_ratio = neu / total
+    
+    # Analyze top aspects
+    if aspect_breakdown:
+        aspect_scores = {}
+        for aspect, counts in aspect_breakdown.items():
+            p = counts.get('positive', 0)
+            n = counts.get('neutral', 0)
+            g = counts.get('negative', 0)
+            total_aspect = p + n + g
+            if total_aspect > 0:
+                score = (p - g) / total_aspect  # Positive minus negative ratio
+                aspect_scores[aspect] = score
+        
+        top_positive = [(a, s) for a, s in aspect_scores.items() if s > 0]
+        top_positive = sorted(top_positive, key=lambda x: x[1], reverse=True)[:2]
+        top_negative = [(a, s) for a, s in aspect_scores.items() if s < 0]
+        top_negative = sorted(top_negative, key=lambda x: x[1])[:2]
+    else:
+        top_positive = []
+        top_negative = []
+    
+    # Build narrative
+    if pos_ratio > 0.6:
+        intro = "The product delivers a generally reliable and high-quality experience"
+        weaknesses = f", though it falls short in {', '.join([a for a, _ in top_negative])}" if top_negative else ""
+        strengths = ""
+        conclusion = ". While it performs well in most areas, some refinement could elevate it further."
+    elif neg_ratio > 0.6:
+        intro = "The product struggles to deliver a consistent or satisfactory experience"
+        strengths = f", with occasional strengths in {', '.join([a for a, _ in top_positive])}" if top_positive else ""
+        weaknesses = ""
+        conclusion = ". Noticeable shortcomings and inconsistent execution prevent it from meeting expectations."
+    else:
+        intro = "The product offers a generally reliable and functional experience, but lacks consistency and refinement"
+        weaknesses = ""
+        strengths = ""
+        conclusion = ". While it performs adequately in most scenarios, noticeable shortcomings and average execution prevent it from delivering a truly high-quality or standout experience."
+    
+    feedback = intro + weaknesses + strengths + conclusion
+    return feedback
 def generate_customers_say(summary_data, sample_reviews=None):
     """
     Convenience function to generate 'Customers Say' feedback.

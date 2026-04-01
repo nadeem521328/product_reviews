@@ -15,7 +15,7 @@ import sqlite3
 from datetime import timedelta
 from templates import detect_aspects
 from sentiment_model_fixed import load_sentiment_model
-from feedback_generator import generate_customers_say
+from feedback_generator import generate_customers_say, generate_aspect_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
 import pandas as pd
 
@@ -183,21 +183,22 @@ def analyze_review():
     else:
         overall_sentiment = 'neutral'
 
-    # Prepare aspect breakdown
+    # Prepare aspect breakdown with per-aspect sentiment
     aspect_breakdown = {}
-    if aspects:
-        for aspect in aspects:
-            aspect_breakdown[aspect] = {
-                'positive': 1 if overall_sentiment == 'positive' else 0,
-                'neutral': 1 if overall_sentiment == 'neutral' else 0,
-                'negative': 1 if overall_sentiment == 'negative' else 0
-            }
-    else:
+    for i, review in enumerate(reviews_list):
+        review_aspects = detect_aspects(review)
+        review_sentiment = individual_results[i]['sentiment'] if i < len(individual_results) else 'neutral'
+        for aspect in review_aspects:
+            if aspect not in aspect_breakdown:
+                aspect_breakdown[aspect] = {'positive': 0, 'neutral': 0, 'negative': 0}
+            aspect_breakdown[aspect][review_sentiment] += 1
+    
+    if not aspect_breakdown:
         aspect_breakdown = {
             'general': {
-                'positive': 1 if overall_sentiment == 'positive' else 0,
-                'neutral': 1 if overall_sentiment == 'neutral' else 0,
-                'negative': 1 if overall_sentiment == 'negative' else 0
+                'positive': positive_count,
+                'neutral': neutral_count,
+                'negative': negative_count
             }
         }
 
@@ -209,8 +210,8 @@ def analyze_review():
 
     # Individual sentiments already computed above
 
-    # Generate AI feedback for customers say
-    customers_say = generate_customers_say(summary)
+    # Generate aspect-based AI feedback for customers say
+    customers_say = generate_aspect_customers_say(aspect_breakdown, summary)
 
     # Calculate star rating for overall sentiment based on counts
     if individual_results:
