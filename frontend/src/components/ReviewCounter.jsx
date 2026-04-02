@@ -1,18 +1,18 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Box, Chip, Stack } from '@mui/material';
 
 const ReviewCounter = ({ reviewText }) => {
-  const countReviews = (text) => {
-    if (!text.trim()) return 0;
-    return text.split('\n').filter(line => line.trim() !== '').length;
-  };
-
-  const reviewCount = countReviews(reviewText);
+  const reviewCount = reviewText.trim()
+    ? reviewText.split('\n').filter((line) => line.trim() !== '').length
+    : 0;
 
   return (
-    <Typography variant="body1" sx={{ mt: 1 }}>
-      Total Reviews: {reviewCount}
-    </Typography>
+    <Box sx={{ mt: 2 }}>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Chip label={`Detected lines: ${reviewCount}`} color="primary" variant="outlined" />
+        <Chip label={reviewCount > 0 ? 'Ready for analysis' : 'Waiting for review text'} color="secondary" variant="outlined" />
+      </Stack>
+    </Box>
   );
 };
 

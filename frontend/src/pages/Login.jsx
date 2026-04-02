@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -7,20 +7,18 @@ import {
   CardContent,
   Typography,
   TextField,
-  Autocomplete,
   Button,
   Alert,
   CircularProgress,
-  Link,
-  useTheme,
-  useMediaQuery,
+  Grid,
+  Stack,
+  Chip,
 } from '@mui/material';
 import {
   Email as EmailIcon,
   Lock as LockIcon,
   Login as LoginIcon,
 } from '@mui/icons-material';
-import { useThemeContext } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
@@ -31,26 +29,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, register, getSavedCredentials } = useAuth();
-  const { mode } = useThemeContext();
-  const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const [savedEmails, setSavedEmails] = useState([]);
-  const [savedCreds, setSavedCreds] = useState([]);
-
-  useEffect(() => {
-    console.log('Loading saved creds...');
-    const creds = getSavedCredentials();
-    console.log('Saved creds:', creds);
-    if (creds && creds.length > 0) {
-      setSavedCreds(creds);
-      setSavedEmails(creds.map(cred => cred.email));
-      console.log('Set savedEmails:', creds.map(cred => cred.email));
-    } else {
-      console.log('No saved creds found');
-    }
-  }, [getSavedCredentials]);
+  const { login, register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,159 +63,209 @@ const Login = () => {
   };
 
   return (
-    <Container
-      component="main"
-      maxWidth="sm"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        py: 4,
-        background: mode === 'dark'
-          ? 'linear-gradient(135deg, #1a1a1a 0%, #006400 100%, #228B22 100%)'
-          : 'linear-gradient(135deg, #FDF6E3 0%, #F5F5DC 50%, #E0D4A8 100%)',
-        flexDirection: 'column',
-      }}
-    >
-      <Card
-        sx={{
-          width: '100%',
-          maxWidth: 450,
-          boxShadow: '0 20px 60px rgba(0,100,0,0.3)',
-          borderRadius: '24px',
-          transition: 'transform 0.4s ease, box-shadow 0.4s ease',
-          '&:hover': {
-            transform: 'translateY(-8px)',
-            boxShadow: '0 24px 80px rgba(0,100,0,0.4)',
-          },
-        }}
-      >
-        <CardContent sx={{ p: 4, pt: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-            <LoginIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-            <Typography component="h1" variant="h3" sx={{ fontWeight: 800, mb: 1 }}>
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 8 } }}>
+      <Grid container spacing={4} alignItems="center">
+        <Grid item xs={12} md={6}>
+          <Box sx={{ pr: { md: 4 } }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              <Chip label="Secure Login" color="secondary" />
+              <Chip label="Review Intelligence" variant="outlined" />
+            </Stack>
+            <Typography variant="h2" sx={{ mb: 2 }}>
+              Customer sentiment, presented like a complete website.
             </Typography>
-          </Box>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>
-              {error}
-            </Alert>
-          )}
-
-          <Box component="form" autoComplete="off" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <Autocomplete
-              freeSolo
-              openOnFocus={true}
-              clearOnBlur={false}
-              forcePopupIcon={false}
-              options={savedEmails}
-              value={email}
-              onChange={(event, newValue) => {
-                setEmail(newValue || '');
-                if (newValue && typeof newValue === 'string') {
-                  const cred = savedCreds.find(c => c.email === newValue);
-                  if (cred) setPassword(cred.password);
-                }
-              }}
-              inputValue={email}
-              onInputChange={(event, newInputValue) => {
-                setEmail(newInputValue);
-              }}
-              fullWidth
-              margin="normal"
-              id="email"
-              label="Email Address"
-              autoComplete={false}
-              autoFocus
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  required
-                  id="user_email"
-                  inputMode="none"
-                  autoComplete="email"
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: (
-                      <>
-                        <EmailIcon sx={{ mr: 1, color: 'action.active' }} />
-                        {params.InputProps.startAdornment}
-                      </>
-                    ),
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 640 }}>
+              Sign in to analyze review datasets, inspect sentiment patterns, and move from raw text to a clear dashboard.
+            </Typography>
+            <Stack spacing={2}>
+              {[
+                'Protected routes for your analysis workspace',
+                'Quick login using saved emails already stored in the browser',
+                'A cleaner path from sign-in to search to dashboard',
+              ].map((item) => (
+                <Card
+                  key={item}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '18px',
+                    background: 'linear-gradient(160deg, rgba(18,52,59,0.96), rgba(28,57,64,0.92))',
+                    color: '#FAF8F5',
+                    borderColor: 'rgba(111, 160, 166, 0.22)',
                   }}
-                  sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-                />
-              )}
-            />
-            {savedEmails.length === 0 && (
-              <Alert severity="info" sx={{ mb: 2, borderRadius: '12px' }}>
-                No saved login emails ({savedEmails.length}). Login once to save.
-              </Alert>
-            )}
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Password"
-              type="password"
-              id="user_password"
-              autoComplete="new-password"
-              inputMode="none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                startAdornment: <LockIcon sx={{ mr: 1, color: 'action.active' }} />,
-              }}
-              sx={{ mb: isSignUp ? 2 : 3, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-            />
-            {isSignUp && (
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                id="user_confirm_password"
-                autoComplete="new-password"
-                inputMode="none"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                InputProps={{
-                  startAdornment: <LockIcon sx={{ mr: 1, color: 'action.active' }} />,
-                }}
-                sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              />
-            )}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={loading}
-              size="large"
-              sx={{ py: 1.5, fontSize: '1.1rem', borderRadius: '12px' }}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LoginIcon />}
-            >
-              {loading ? (isSignUp ? 'Creating Account...' : 'Signing In...') : (isSignUp ? 'Sign Up' : 'Sign In')}
-            </Button>
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={toggleForm}
-                sx={{ mt: 2, borderRadius: '12px', py: 1 }}
-              >
-                {isSignUp ? 'Already have account? Sign In' : 'Need an account? Sign Up'}
-              </Button>
-            </Box>
+                >
+                  <Typography>{item}</Typography>
+                </Card>
+              ))}
+            </Stack>
           </Box>
-        </CardContent>
-      </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              position: 'relative',
+              maxWidth: 520,
+              mx: 'auto',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: { xs: '-18px', md: '-28px' },
+                borderRadius: '36px',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? 'radial-gradient(circle at top, rgba(111,160,166,0.28) 0%, rgba(200,145,102,0.18) 42%, rgba(200,145,102,0) 74%)'
+                    : 'radial-gradient(circle at top, rgba(31,78,87,0.16) 0%, rgba(184,116,68,0.12) 42%, rgba(184,116,68,0) 74%)',
+                filter: 'blur(28px)',
+                pointerEvents: 'none',
+              },
+            }}
+          >
+            <Card
+              sx={{
+                position: 'relative',
+                zIndex: 1,
+                borderRadius: '18px',
+                background: 'linear-gradient(160deg, rgba(18,52,59,0.98), rgba(28,57,64,0.94))',
+                color: '#FAF8F5',
+                borderColor: 'rgba(111, 160, 166, 0.22)',
+                '& .MuiTypography-root': {
+                  color: 'inherit',
+                },
+                '& .MuiTypography-colorTextSecondary': {
+                  color: 'rgba(199, 210, 214, 0.84)',
+                },
+                '& .MuiOutlinedInput-root': {
+                  color: '#FAF8F5',
+                  backgroundColor: 'rgba(250,248,245,0.04)',
+                  '& fieldset': {
+                    borderColor: 'rgba(199, 210, 214, 0.28)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(111, 160, 166, 0.46)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#C89166',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(199, 210, 214, 0.82)',
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: '#E0B692',
+                },
+                '& .MuiSvgIcon-root': {
+                  color: 'rgba(199, 210, 214, 0.82)',
+                },
+              }}
+            >
+              <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: 3 }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: 'common.white',
+                    background: 'linear-gradient(135deg, #12343B 0%, #B87444 100%)',
+                    mb: 2,
+                  }}
+                >
+                  <LoginIcon sx={{ fontSize: 34 }} />
+                </Box>
+                <Typography component="h1" variant="h3">
+                  {isSignUp ? 'Create your workspace' : 'Welcome back'}
+                </Typography>
+                <Typography color="text.secondary" sx={{ mt: 1 }}>
+                  {isSignUp ? 'Set up an account to start analyzing review data.' : 'Continue into your review analysis dashboard.'}
+                </Typography>
+              </Box>
+
+              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+              <Box component="form" autoComplete="off" onSubmit={handleSubmit} noValidate>
+                <TextField
+                  required
+                  fullWidth
+                  label="Email address"
+                  type="email"
+                  name="no-autofill-email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="off"
+                  inputProps={{
+                    autoComplete: 'off',
+                  }}
+                  InputProps={{
+                    startAdornment: <EmailIcon sx={{ mr: 1, color: 'action.active' }} />,
+                  }}
+                  sx={{ mb: 2 }}
+                />
+
+                <TextField
+                  required
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  name="no-autofill-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  inputProps={{
+                    autoComplete: 'new-password',
+                  }}
+                  InputProps={{
+                    startAdornment: <LockIcon sx={{ mr: 1, color: 'action.active' }} />,
+                  }}
+                  sx={{ mb: isSignUp ? 2 : 3 }}
+                />
+
+                {isSignUp && (
+                  <TextField
+                    required
+                    fullWidth
+                    label="Confirm password"
+                    type="password"
+                    name="no-autofill-confirm-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    inputProps={{
+                      autoComplete: 'new-password',
+                    }}
+                    InputProps={{
+                      startAdornment: <LockIcon sx={{ mr: 1, color: 'action.active' }} />,
+                    }}
+                    sx={{ mb: 3 }}
+                  />
+                )}
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="secondary"
+                    disabled={loading}
+                    size="large"
+                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LoginIcon />}
+                  >
+                    {loading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Sign up' : 'Sign in')}
+                  </Button>
+                  <Button fullWidth variant="outlined" onClick={toggleForm} size="large">
+                    {isSignUp ? 'Use sign in' : 'Create account'}
+                  </Button>
+                </Stack>
+
+              </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </Grid>
+      </Grid>
     </Container>
   );
 };
 
 export default Login;
-

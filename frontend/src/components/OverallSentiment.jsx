@@ -1,9 +1,7 @@
 import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import { Card, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, LinearProgress } from '@mui/material';
 
 const OverallSentiment = ({ data }) => {
-  const theme = useTheme();
   const summary = data.summary || {};
   const totalPositive = summary.positive || 0;
   const totalNeutral = summary.neutral || 0;
@@ -24,44 +22,44 @@ const OverallSentiment = ({ data }) => {
     return 'sentiment.mixed';
   };
 
-  const SentimentIcon = ({ sentiment }) => {
-    if (sentiment === 'Mostly Positive') return '😊';
-    if (sentiment === 'Mostly Negative') return '😞';
-    if (sentiment === 'Mostly Neutral') return '😐';
-    return '🤔';
-  };
-
-  const gradientBg = theme.palette.mode === 'light' 
-    ? 'linear-gradient(135deg, #F5F5DC 0%, #FDF6E3 100%)' 
-    : 'linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%)';
+  const ratio = totalReviews ? Math.max(totalPositive, totalNeutral, totalNegative) / totalReviews : 0;
 
   return (
-    <Card sx={{ 
-      minHeight: 200, 
-      background: gradientBg,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      textAlign: 'center'
-    }}>
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
-          Overall Sentiment
+    <Card
+      sx={{
+        minHeight: 280,
+        borderRadius: '18px',
+        background: 'linear-gradient(160deg, rgba(18,52,59,0.14), rgba(184,116,68,0.12))',
+      }}
+    >
+      <CardContent sx={{ p: 3.5 }}>
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          Overall sentiment
         </Typography>
-        <Box sx={{ fontSize: 64, mb: 2 }}>
-          <SentimentIcon sentiment={getOverallSentiment()} />
-        </Box>
-        <Typography variant="h3" color={getSentimentColor(getOverallSentiment())} gutterBottom sx={{ fontWeight: 800 }}>
+        <Typography variant="h3" color={getSentimentColor(getOverallSentiment())} sx={{ mb: 1 }}>
           {getOverallSentiment()}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Based on {totalReviews} reviews analyzed
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Based on {totalReviews} reviews analyzed in this batch.
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          👍 {totalPositive} | 😐 {totalNeutral} | 👎 {totalNegative}
+
+        <LinearProgress
+          variant="determinate"
+          value={Math.round(ratio * 100)}
+          sx={{
+            height: 10,
+            borderRadius: 999,
+            mb: 3,
+            backgroundColor: 'rgba(255,255,255,0.45)',
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 999,
+            },
+          }}
+        />
+
+        <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
+          This section gives a quick reading of the overall sentiment trend in the selected batch. It helps you understand the dominant tone at a glance before moving into charts, aspect-level feedback, and detailed review analysis.
         </Typography>
-        
       </CardContent>
     </Card>
   );
