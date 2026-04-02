@@ -24,8 +24,8 @@ function AppShell({ children }) {
         minHeight: '100vh',
         background: (theme) =>
           theme.palette.mode === 'dark'
-            ? 'radial-gradient(circle at top, rgba(111,160,166,0.16), transparent 28%), linear-gradient(180deg, #0E1C21 0%, #11262C 52%, #0A1418 100%)'
-            : 'radial-gradient(circle at top, rgba(18,52,59,0.12), transparent 24%), linear-gradient(180deg, #F3EFEA 0%, #ECE4DB 48%, #D9D4CD 100%)',
+            ? 'radial-gradient(circle at top, rgba(162,138,168,0.18), transparent 28%), linear-gradient(180deg, #141016 0%, #19131C 52%, #110D12 100%)'
+            : 'radial-gradient(circle at top, rgba(69,53,75,0.16), transparent 24%), linear-gradient(180deg, #171319 0%, #1C1620 46%, #130F15 100%)',
       }}
     >
       <Navbar />
@@ -39,17 +39,18 @@ function AppShell({ children }) {
             border: '1px solid',
             borderColor: 'divider',
             backgroundColor: 'background.paper',
+            color: 'text.primary',
             display: 'flex',
             justifyContent: 'space-between',
             gap: 2,
             flexWrap: 'wrap',
             transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
-            boxShadow: '0 18px 42px rgba(15, 23, 42, 0.08)',
+            boxShadow: '0 18px 42px rgba(12, 10, 16, 0.28)',
             '@media (hover: hover)': {
               '&:hover': {
                 transform: 'translateY(-4px)',
-                boxShadow: '0 24px 54px rgba(15, 23, 42, 0.12)',
-                borderColor: 'rgba(31, 78, 87, 0.22)',
+                boxShadow: '0 24px 54px rgba(12, 10, 16, 0.36)',
+                borderColor: 'rgba(185, 152, 90, 0.22)',
               },
             },
           }}

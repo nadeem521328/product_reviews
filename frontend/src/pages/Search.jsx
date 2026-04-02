@@ -251,7 +251,16 @@ const Search = () => {
     <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3.5, borderRadius: '18px', height: '100%' }}>
+          <Card
+            sx={{
+              p: 3.5,
+              borderRadius: '18px',
+              height: '100%',
+              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
+              color: '#FAF7F2',
+              borderColor: 'rgba(185, 152, 90, 0.16)',
+            }}
+          >
             <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
               <Chip label="Analyzer" color="secondary" />
               <Chip label={inputLabels[inputMode]} variant="outlined" />
@@ -259,7 +268,7 @@ const Search = () => {
             <Typography variant="h3" sx={{ mb: 2 }}>
               Turn raw reviews into a clean sentiment report.
             </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
+            <Typography sx={{ mb: 3, color: 'rgba(212, 200, 210, 0.88)' }}>
               Choose how you want to bring reviews in, clean them if needed, then move straight into the dashboard.
             </Typography>
             <Stack spacing={2}>
@@ -273,16 +282,16 @@ const Search = () => {
                   sx={{
                     p: 2,
                     borderRadius: '18px',
-                    backgroundColor: 'background.default',
+                    background: 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))',
                     border: '1px solid',
-                    borderColor: 'divider',
+                    borderColor: 'rgba(250, 247, 242, 0.08)',
                     transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
-                    boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
+                    boxShadow: '0 12px 28px rgba(12, 10, 16, 0.22)',
                     '@media (hover: hover)': {
                       '&:hover': {
                         transform: 'translateY(-4px)',
-                        boxShadow: '0 18px 36px rgba(15, 23, 42, 0.10)',
-                        borderColor: 'rgba(31, 78, 87, 0.18)',
+                        boxShadow: '0 18px 36px rgba(12, 10, 16, 0.30)',
+                        borderColor: 'rgba(185, 152, 90, 0.18)',
                       },
                     },
                   }}
@@ -295,11 +304,53 @@ const Search = () => {
         </Grid>
 
         <Grid item xs={12} md={8}>
-          <Card sx={{ p: { xs: 2.5, md: 4 }, borderRadius: '18px' }}>
+          <Card
+            sx={{
+              p: { xs: 2.5, md: 4 },
+              borderRadius: '18px',
+              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
+              color: '#FAF7F2',
+              borderColor: 'rgba(185, 152, 90, 0.16)',
+              '& .MuiTypography-root': {
+                color: 'inherit',
+              },
+              '& .MuiTypography-colorTextSecondary': {
+                color: '#C9BEC8',
+              },
+              '& .MuiOutlinedInput-root': {
+                color: '#FAF7F2',
+                backgroundColor: 'rgba(250,247,242,0.05)',
+                '& fieldset': {
+                  borderColor: 'rgba(250,247,242,0.14)',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'rgba(185,152,90,0.34)',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#B9985A',
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: '#C9BEC8',
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#D1B486',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#B9985A',
+              },
+              '& .MuiTab-root': {
+                color: '#C9BEC8',
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: '#FAF7F2',
+              },
+            }}
+          >
             <Typography variant="h4" sx={{ mb: 1 }}>
               Review workspace
             </Typography>
-            <Typography color="text.secondary" sx={{ mb: 3 }}>
+            <Typography sx={{ mb: 3, color: '#C9BEC8' }}>
               Load reviews, clean them, and send them to the existing backend analyzer without changing its logic.
             </Typography>
 

@@ -41,9 +41,9 @@ const Home = () => {
               minHeight: '100%',
               borderRadius: '18px',
               border: '1px solid',
-              borderColor: 'rgba(111, 160, 166, 0.22)',
-              background: 'linear-gradient(145deg, rgba(18,52,59,0.97), rgba(28,57,64,0.92))',
-              color: '#FAF8F5',
+              borderColor: 'rgba(185, 152, 90, 0.16)',
+              background: 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
+              color: '#FAF7F2',
               transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
               boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
               '&::before': {
@@ -53,8 +53,8 @@ const Home = () => {
                 borderRadius: '32px',
                 background: (theme) =>
                   theme.palette.mode === 'dark'
-                    ? 'radial-gradient(circle at 55% 0%, rgba(111,160,166,0.24) 0%, rgba(200,145,102,0.16) 40%, rgba(200,145,102,0) 74%)'
-                    : 'radial-gradient(circle at 55% 0%, rgba(31,78,87,0.14) 0%, rgba(184,116,68,0.10) 40%, rgba(184,116,68,0) 74%)',
+                    ? 'radial-gradient(circle at 55% 0%, rgba(162,138,168,0.24) 0%, rgba(198,164,106,0.18) 40%, rgba(198,164,106,0) 74%)'
+                    : 'radial-gradient(circle at 55% 0%, rgba(69,53,75,0.24) 0%, rgba(185,152,90,0.16) 40%, rgba(185,152,90,0) 74%)',
                 filter: 'blur(30px)',
                 zIndex: -1,
                 pointerEvents: 'none',
@@ -62,8 +62,8 @@ const Home = () => {
               '@media (hover: hover)': {
                 '&:hover': {
                   transform: 'translateY(-6px)',
-                  boxShadow: '0 30px 70px rgba(15, 23, 42, 0.14)',
-                  borderColor: 'rgba(31, 78, 87, 0.22)',
+                  boxShadow: '0 30px 70px rgba(12, 10, 16, 0.40)',
+                  borderColor: 'rgba(185, 152, 90, 0.24)',
                 },
               },
             }}
@@ -75,7 +75,7 @@ const Home = () => {
             <Typography variant="h2" component="h1" sx={{ mb: 2 }}>
               Make your review analyzer feel like a real product.
             </Typography>
-            <Typography variant="h6" sx={{ maxWidth: 680, mb: 4, color: 'rgba(199, 210, 214, 0.84)' }}>
+            <Typography variant="h6" sx={{ maxWidth: 680, mb: 4, color: 'rgba(212, 200, 210, 0.88)' }}>
               Your app takes raw customer feedback and turns it into readable sentiment signals, ratings,
               and actionable summaries for product analysis.
             </Typography>
@@ -95,15 +95,15 @@ const Home = () => {
                       p: 2.5,
                       height: '100%',
                       borderRadius: '18px',
-                      background: 'linear-gradient(160deg, rgba(20,43,49,0.98), rgba(24,49,55,0.94))',
-                      color: '#FAF8F5',
-                      borderColor: 'rgba(111, 160, 166, 0.2)',
+                      background: 'linear-gradient(160deg, rgba(33,26,36,0.98), rgba(47,37,52,0.94))',
+                      color: '#FAF7F2',
+                      borderColor: 'rgba(185, 152, 90, 0.14)',
                     }}
                   >
-                    <Typography variant="h3" sx={{ color: '#A7C3C7' }}>
+                    <Typography variant="h3" sx={{ color: '#D1B486' }}>
                       {metric.value}
                     </Typography>
-                    <Typography variant="body1" sx={{ color: 'rgba(199, 210, 214, 0.82)' }}>
+                    <Typography variant="body1" sx={{ color: 'rgba(212, 200, 210, 0.84)' }}>
                       {metric.label}
                     </Typography>
                   </Card>
@@ -121,9 +121,9 @@ const Home = () => {
               p: { xs: 3, md: 4 },
               borderRadius: '18px',
               height: '100%',
-              background: 'linear-gradient(160deg, rgba(18,52,59,0.97), rgba(28,57,64,0.92))',
-              color: '#FAF8F5',
-              borderColor: 'rgba(111, 160, 166, 0.22)',
+              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
+              color: '#FAF7F2',
+              borderColor: 'rgba(185, 152, 90, 0.16)',
               '&::before': {
                 content: '""',
                 position: 'absolute',
@@ -131,8 +131,8 @@ const Home = () => {
                 borderRadius: '28px',
                 background: (theme) =>
                   theme.palette.mode === 'dark'
-                    ? 'radial-gradient(circle at 50% 10%, rgba(111,160,166,0.22) 0%, rgba(200,145,102,0.15) 38%, rgba(200,145,102,0) 72%)'
-                    : 'radial-gradient(circle at 50% 10%, rgba(31,78,87,0.12) 0%, rgba(184,116,68,0.10) 38%, rgba(184,116,68,0) 72%)',
+                    ? 'radial-gradient(circle at 50% 10%, rgba(162,138,168,0.22) 0%, rgba(198,164,106,0.18) 38%, rgba(198,164,106,0) 72%)'
+                    : 'radial-gradient(circle at 50% 10%, rgba(69,53,75,0.24) 0%, rgba(185,152,90,0.16) 38%, rgba(185,152,90,0) 72%)',
                 filter: 'blur(24px)',
                 zIndex: -1,
                 pointerEvents: 'none',
@@ -149,21 +149,21 @@ const Home = () => {
                   sx={{
                     p: 2.5,
                     borderRadius: '18px',
-                    background: 'linear-gradient(160deg, rgba(250,248,245,0.06), rgba(217,212,205,0.04))',
+                    background: 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))',
                     border: '1px solid',
-                    borderColor: 'rgba(199, 210, 214, 0.12)',
+                    borderColor: 'rgba(250, 247, 242, 0.08)',
                     transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
                     boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
                     '@media (hover: hover)': {
                       '&:hover': {
                         transform: 'translateY(-4px)',
-                        boxShadow: '0 18px 36px rgba(15, 23, 42, 0.10)',
-                        borderColor: 'rgba(31, 78, 87, 0.18)',
+                        boxShadow: '0 18px 36px rgba(12, 10, 16, 0.28)',
+                        borderColor: 'rgba(185, 152, 90, 0.18)',
                       },
                     },
                   }}
                 >
-                  <Typography variant="body1" sx={{ color: 'rgba(250, 248, 245, 0.92)' }}>{item}</Typography>
+                  <Typography variant="body1" sx={{ color: '#FAF7F2' }}>{item}</Typography>
                 </Box>
               ))}
             </Stack>

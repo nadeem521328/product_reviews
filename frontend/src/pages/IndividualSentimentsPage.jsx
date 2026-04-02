@@ -34,15 +34,16 @@ const IndividualSentimentsPage = () => {
           p: { xs: 3, md: 4 },
           borderRadius: '18px',
           border: '1px solid',
-          borderColor: 'divider',
-          background: 'linear-gradient(145deg, rgba(18,52,59,0.10), rgba(184,116,68,0.10))',
+          borderColor: 'rgba(185, 152, 90, 0.16)',
+          background: 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
+          color: '#FAF7F2',
           transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
-          boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
+          boxShadow: '0 24px 60px rgba(12, 10, 16, 0.30)',
           '@media (hover: hover)': {
             '&:hover': {
               transform: 'translateY(-6px)',
-              boxShadow: '0 30px 70px rgba(15, 23, 42, 0.14)',
-              borderColor: 'rgba(31, 78, 87, 0.22)',
+              boxShadow: '0 30px 70px rgba(12, 10, 16, 0.40)',
+              borderColor: 'rgba(185, 152, 90, 0.22)',
             },
           },
         }}
@@ -54,7 +55,7 @@ const IndividualSentimentsPage = () => {
         <Typography variant="h3" sx={{ mb: 1 }}>
           Individual sentiment analysis
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography sx={{ mb: 3, color: 'rgba(212, 200, 210, 0.88)' }}>
           Inspect the sentiment, confidence, and rating for each review in the analyzed batch.
         </Typography>
         <Button variant="outlined" onClick={() => navigate('/dashboard', { state: { data } })}>

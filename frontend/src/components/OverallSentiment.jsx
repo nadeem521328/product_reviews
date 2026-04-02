@@ -29,7 +29,7 @@ const OverallSentiment = ({ data }) => {
       sx={{
         minHeight: 280,
         borderRadius: '18px',
-        background: 'linear-gradient(160deg, rgba(18,52,59,0.14), rgba(184,116,68,0.12))',
+        background: 'linear-gradient(160deg, rgba(69,53,75,0.24), rgba(185,152,90,0.16))',
       }}
     >
       <CardContent sx={{ p: 3.5 }}>
@@ -50,7 +50,7 @@ const OverallSentiment = ({ data }) => {
             height: 10,
             borderRadius: 999,
             mb: 3,
-            backgroundColor: 'rgba(255,255,255,0.45)',
+            backgroundColor: 'rgba(250,247,242,0.20)',
             '& .MuiLinearProgress-bar': {
               borderRadius: 999,
             },

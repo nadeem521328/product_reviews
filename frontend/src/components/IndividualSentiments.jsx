@@ -22,7 +22,7 @@ const IndividualSentiments = ({ individualSentiments }) => {
         <Typography variant="h5" gutterBottom>
           Individual sentiment analysis ({individualSentiments.length} reviews)
         </Typography>
-        <TableContainer component={Paper} sx={{ maxHeight: 640, overflow: 'auto', borderRadius: 5 }}>
+        <TableContainer component={Paper} sx={{ maxHeight: 640, overflow: 'auto', borderRadius: '12px' }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>

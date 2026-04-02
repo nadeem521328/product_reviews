@@ -88,9 +88,9 @@ const Login = () => {
                   sx={{
                     p: 2.5,
                     borderRadius: '18px',
-                    background: 'linear-gradient(160deg, rgba(18,52,59,0.96), rgba(28,57,64,0.92))',
-                    color: '#FAF8F5',
-                    borderColor: 'rgba(111, 160, 166, 0.22)',
+                    background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
+                    color: '#FAF7F2',
+                    borderColor: 'rgba(185, 152, 90, 0.14)',
                   }}
                 >
                   <Typography>{item}</Typography>
@@ -113,8 +113,8 @@ const Login = () => {
                 borderRadius: '36px',
                 background: (theme) =>
                   theme.palette.mode === 'dark'
-                    ? 'radial-gradient(circle at top, rgba(111,160,166,0.28) 0%, rgba(200,145,102,0.18) 42%, rgba(200,145,102,0) 74%)'
-                    : 'radial-gradient(circle at top, rgba(31,78,87,0.16) 0%, rgba(184,116,68,0.12) 42%, rgba(184,116,68,0) 74%)',
+                    ? 'radial-gradient(circle at top, rgba(162,138,168,0.28) 0%, rgba(198,164,106,0.20) 42%, rgba(198,164,106,0) 74%)'
+                    : 'radial-gradient(circle at top, rgba(69,53,75,0.24) 0%, rgba(185,152,90,0.18) 42%, rgba(185,152,90,0) 74%)',
                 filter: 'blur(28px)',
                 pointerEvents: 'none',
               },
@@ -125,36 +125,36 @@ const Login = () => {
                 position: 'relative',
                 zIndex: 1,
                 borderRadius: '18px',
-                background: 'linear-gradient(160deg, rgba(18,52,59,0.98), rgba(28,57,64,0.94))',
-                color: '#FAF8F5',
-                borderColor: 'rgba(111, 160, 166, 0.22)',
+                background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
+                color: '#FAF7F2',
+                borderColor: 'rgba(185, 152, 90, 0.16)',
                 '& .MuiTypography-root': {
                   color: 'inherit',
                 },
                 '& .MuiTypography-colorTextSecondary': {
-                  color: 'rgba(199, 210, 214, 0.84)',
+                  color: '#C9BEC8',
                 },
                 '& .MuiOutlinedInput-root': {
-                  color: '#FAF8F5',
-                  backgroundColor: 'rgba(250,248,245,0.04)',
+                  color: '#FAF7F2',
+                  backgroundColor: 'rgba(250,247,242,0.05)',
                   '& fieldset': {
-                    borderColor: 'rgba(199, 210, 214, 0.28)',
+                    borderColor: 'rgba(250,247,242,0.14)',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(111, 160, 166, 0.46)',
+                    borderColor: 'rgba(185,152,90,0.34)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#C89166',
+                    borderColor: '#B9985A',
                   },
                 },
                 '& .MuiInputLabel-root': {
-                  color: 'rgba(199, 210, 214, 0.82)',
+                  color: '#C9BEC8',
                 },
                 '& .MuiInputLabel-root.Mui-focused': {
-                  color: '#E0B692',
+                  color: '#D1B486',
                 },
                 '& .MuiSvgIcon-root': {
-                  color: 'rgba(199, 210, 214, 0.82)',
+                  color: '#C9BEC8',
                 },
               }}
             >
@@ -168,7 +168,7 @@ const Login = () => {
                     display: 'grid',
                     placeItems: 'center',
                     color: 'common.white',
-                    background: 'linear-gradient(135deg, #12343B 0%, #B87444 100%)',
+                    background: 'linear-gradient(135deg, #45354B 0%, #B9985A 100%)',
                     mb: 2,
                   }}
                 >

@@ -42,9 +42,9 @@ const Dashboard = () => {
           p: { xs: 3, md: 4 },
           borderRadius: '18px',
           border: '1px solid',
-          borderColor: 'rgba(111, 160, 166, 0.22)',
-          background: 'linear-gradient(145deg, rgba(18,52,59,0.97), rgba(28,57,64,0.92))',
-          color: '#FAF8F5',
+          borderColor: 'rgba(185, 152, 90, 0.16)',
+          background: 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
+          color: '#FAF7F2',
           transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
           boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
           '&::before': {
@@ -54,8 +54,8 @@ const Dashboard = () => {
             borderRadius: '32px',
             background: (theme) =>
               theme.palette.mode === 'dark'
-                ? 'radial-gradient(circle at 50% 0%, rgba(111,160,166,0.24) 0%, rgba(200,145,102,0.16) 40%, rgba(200,145,102,0) 74%)'
-                : 'radial-gradient(circle at 50% 0%, rgba(31,78,87,0.14) 0%, rgba(184,116,68,0.10) 40%, rgba(184,116,68,0) 74%)',
+                ? 'radial-gradient(circle at 50% 0%, rgba(162,138,168,0.24) 0%, rgba(198,164,106,0.18) 40%, rgba(198,164,106,0) 74%)'
+                : 'radial-gradient(circle at 50% 0%, rgba(69,53,75,0.24) 0%, rgba(185,152,90,0.16) 40%, rgba(185,152,90,0) 74%)',
             filter: 'blur(28px)',
             zIndex: -1,
             pointerEvents: 'none',
@@ -63,8 +63,8 @@ const Dashboard = () => {
           '@media (hover: hover)': {
             '&:hover': {
               transform: 'translateY(-6px)',
-              boxShadow: '0 30px 70px rgba(15, 23, 42, 0.14)',
-              borderColor: 'rgba(31, 78, 87, 0.22)',
+              boxShadow: '0 30px 70px rgba(12, 10, 16, 0.40)',
+              borderColor: 'rgba(185, 152, 90, 0.22)',
             },
           },
         }}
@@ -76,7 +76,7 @@ const Dashboard = () => {
         <Typography variant="h2" component="h1" gutterBottom>
           Analysis dashboard
         </Typography>
-        <Typography variant="h6" sx={{ maxWidth: 760, mb: 3, color: 'rgba(199, 210, 214, 0.84)' }}>
+        <Typography variant="h6" sx={{ maxWidth: 760, mb: 3, color: 'rgba(212, 200, 210, 0.88)' }}>
           A clearer product-style overview of review sentiment, star rating trends, aspect signals, and individual feedback.
         </Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

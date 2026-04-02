@@ -39,7 +39,7 @@ const Navbar = () => {
             border: '1px solid',
             borderColor: 'divider',
             backgroundColor: (theme) =>
-              theme.palette.mode === 'dark' ? 'rgba(20,43,49,0.72)' : 'rgba(250,248,245,0.76)',
+              theme.palette.mode === 'dark' ? 'rgba(33,26,36,0.82)' : 'rgba(36,29,40,0.78)',
             color: 'text.primary',
             justifyContent: 'space-between',
             gap: 2,
@@ -56,7 +56,7 @@ const Navbar = () => {
                 display: 'grid',
                 placeItems: 'center',
                 color: 'common.white',
-                background: 'linear-gradient(135deg, #12343B 0%, #B87444 100%)',
+                background: 'linear-gradient(135deg, #45354B 0%, #B9985A 100%)',
                 fontWeight: 900,
               }}
             >
