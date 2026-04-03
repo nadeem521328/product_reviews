@@ -42,9 +42,13 @@ const Dashboard = () => {
           p: { xs: 3, md: 4 },
           borderRadius: '18px',
           border: '1px solid',
-          borderColor: 'rgba(185, 152, 90, 0.16)',
-          background: 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
-          color: '#FAF7F2',
+          borderColor: (theme) =>
+            theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
+          background: (theme) =>
+            theme.palette.mode === 'dark'
+              ? 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))'
+              : 'linear-gradient(145deg, rgba(255,253,249,0.98), rgba(245,237,228,0.96))',
+          color: 'text.primary',
           transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
           boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
           '&::before': {
@@ -76,7 +80,15 @@ const Dashboard = () => {
         <Typography variant="h2" component="h1" gutterBottom>
           Analysis dashboard
         </Typography>
-        <Typography variant="h6" sx={{ maxWidth: 760, mb: 3, color: 'rgba(212, 200, 210, 0.88)' }}>
+        <Typography
+          variant="h6"
+          sx={{
+            maxWidth: 760,
+            mb: 3,
+            color: (theme) =>
+              theme.palette.mode === 'dark' ? 'rgba(212, 200, 210, 0.88)' : 'rgba(47, 39, 52, 0.78)',
+          }}
+        >
           A clearer product-style overview of review sentiment, star rating trends, aspect signals, and individual feedback.
         </Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

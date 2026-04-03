@@ -25,7 +25,7 @@ function AppShell({ children }) {
         background: (theme) =>
           theme.palette.mode === 'dark'
             ? 'radial-gradient(circle at top, rgba(162,138,168,0.18), transparent 28%), linear-gradient(180deg, #141016 0%, #19131C 52%, #110D12 100%)'
-            : 'radial-gradient(circle at top, rgba(69,53,75,0.16), transparent 24%), linear-gradient(180deg, #171319 0%, #1C1620 46%, #130F15 100%)',
+            : 'radial-gradient(circle at top, rgba(185,152,90,0.18), transparent 24%), linear-gradient(180deg, #FCF8F2 0%, #F5EDE4 48%, #EFE3D6 100%)',
       }}
     >
       <Navbar />
@@ -49,17 +49,23 @@ function AppShell({ children }) {
             '@media (hover: hover)': {
               '&:hover': {
                 transform: 'translateY(-4px)',
-                boxShadow: '0 24px 54px rgba(12, 10, 16, 0.36)',
-                borderColor: 'rgba(185, 152, 90, 0.22)',
+                boxShadow: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? '0 24px 54px rgba(12, 10, 16, 0.36)'
+                    : '0 18px 40px rgba(68, 49, 74, 0.14)',
+                borderColor: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(185, 152, 90, 0.22)'
+                    : 'rgba(69, 53, 75, 0.18)',
               },
             },
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            SentimentScope helps teams turn raw customer reviews into clear product signals.
+            SentimentScope turns raw customer reviews into sentiment insights.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Frontend experience updated without changing your backend workflow.
+            Track what you really think about your product.
           </Typography>
         </Box>
       </Container>

@@ -41,9 +41,13 @@ const Home = () => {
               minHeight: '100%',
               borderRadius: '18px',
               border: '1px solid',
-              borderColor: 'rgba(185, 152, 90, 0.16)',
-              background: 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
-              color: '#FAF7F2',
+              borderColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(145deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))'
+                  : 'linear-gradient(145deg, rgba(255,253,249,0.98), rgba(245,237,228,0.96))',
+              color: 'text.primary',
               transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
               boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
               '&::before': {
@@ -75,7 +79,15 @@ const Home = () => {
             <Typography variant="h2" component="h1" sx={{ mb: 2 }}>
               Make your review analyzer feel like a real product.
             </Typography>
-            <Typography variant="h6" sx={{ maxWidth: 680, mb: 4, color: 'rgba(212, 200, 210, 0.88)' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                maxWidth: 680,
+                mb: 4,
+                color: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(212, 200, 210, 0.88)' : 'rgba(47, 39, 52, 0.78)',
+              }}
+            >
               Your app takes raw customer feedback and turns it into readable sentiment signals, ratings,
               and actionable summaries for product analysis.
             </Typography>
@@ -95,15 +107,25 @@ const Home = () => {
                       p: 2.5,
                       height: '100%',
                       borderRadius: '18px',
-                      background: 'linear-gradient(160deg, rgba(33,26,36,0.98), rgba(47,37,52,0.94))',
-                      color: '#FAF7F2',
-                      borderColor: 'rgba(185, 152, 90, 0.14)',
+                      background: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'linear-gradient(160deg, rgba(33,26,36,0.98), rgba(47,37,52,0.94))'
+                          : 'linear-gradient(160deg, rgba(255,250,244,0.98), rgba(241,232,221,0.94))',
+                      color: 'text.primary',
+                      borderColor: (theme) =>
+                        theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.14)' : 'rgba(69, 53, 75, 0.12)',
                     }}
                   >
-                    <Typography variant="h3" sx={{ color: '#D1B486' }}>
+                    <Typography variant="h3" sx={{ color: 'secondary.main' }}>
                       {metric.value}
                     </Typography>
-                    <Typography variant="body1" sx={{ color: 'rgba(212, 200, 210, 0.84)' }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: (theme) =>
+                          theme.palette.mode === 'dark' ? 'rgba(212, 200, 210, 0.84)' : 'rgba(47, 39, 52, 0.72)',
+                      }}
+                    >
                       {metric.label}
                     </Typography>
                   </Card>
@@ -121,9 +143,13 @@ const Home = () => {
               p: { xs: 3, md: 4 },
               borderRadius: '18px',
               height: '100%',
-              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))',
-              color: '#FAF7F2',
-              borderColor: 'rgba(185, 152, 90, 0.16)',
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.92))'
+                  : 'linear-gradient(160deg, rgba(255,253,249,0.98), rgba(244,236,226,0.96))',
+              color: 'text.primary',
+              borderColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
               '&::before': {
                 content: '""',
                 position: 'absolute',
@@ -140,7 +166,7 @@ const Home = () => {
             }}
           >
             <Typography variant="h5" sx={{ mb: 3 }}>
-              What this website now communicates
+              Everything You Need, In One Place :
             </Typography>
             <Stack spacing={2.5}>
               {highlights.map((item) => (
@@ -149,9 +175,13 @@ const Home = () => {
                   sx={{
                     p: 2.5,
                     borderRadius: '18px',
-                    background: 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))',
+                    background: (theme) =>
+                      theme.palette.mode === 'dark'
+                        ? 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))'
+                        : 'linear-gradient(160deg, rgba(255,255,255,0.84), rgba(185,152,90,0.08))',
                     border: '1px solid',
-                    borderColor: 'rgba(250, 247, 242, 0.08)',
+                    borderColor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(250, 247, 242, 0.08)' : 'rgba(69, 53, 75, 0.08)',
                     transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
                     boxShadow: '0 12px 28px rgba(15, 23, 42, 0.05)',
                     '@media (hover: hover)': {
@@ -163,7 +193,7 @@ const Home = () => {
                     },
                   }}
                 >
-                  <Typography variant="body1" sx={{ color: '#FAF7F2' }}>{item}</Typography>
+                  <Typography variant="body1" sx={{ color: 'text.primary' }}>{item}</Typography>
                 </Box>
               ))}
             </Stack>

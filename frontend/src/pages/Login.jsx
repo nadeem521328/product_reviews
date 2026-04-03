@@ -28,6 +28,7 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [credentialsEditable, setCredentialsEditable] = useState(false);
   const navigate = useNavigate();
   const { login, register } = useAuth();
 
@@ -60,6 +61,13 @@ const Login = () => {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setCredentialsEditable(false);
+  };
+
+  const enableCredentialSuggestions = () => {
+    if (!credentialsEditable) {
+      setCredentialsEditable(true);
+    }
   };
 
   return (
@@ -88,9 +96,13 @@ const Login = () => {
                   sx={{
                     p: 2.5,
                     borderRadius: '18px',
-                    background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
-                    color: '#FAF7F2',
-                    borderColor: 'rgba(185, 152, 90, 0.14)',
+                    background: (theme) =>
+                      theme.palette.mode === 'dark'
+                        ? 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))'
+                        : 'linear-gradient(160deg, rgba(255,253,249,0.98), rgba(244,236,226,0.96))',
+                    color: 'text.primary',
+                    borderColor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.14)' : 'rgba(69, 53, 75, 0.12)',
                   }}
                 >
                   <Typography>{item}</Typography>
@@ -125,36 +137,42 @@ const Login = () => {
                 position: 'relative',
                 zIndex: 1,
                 borderRadius: '18px',
-                background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
-                color: '#FAF7F2',
-                borderColor: 'rgba(185, 152, 90, 0.16)',
+                background: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))'
+                    : 'linear-gradient(160deg, rgba(255,253,249,0.98), rgba(244,236,226,0.96))',
+                color: 'text.primary',
+                borderColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
                 '& .MuiTypography-root': {
                   color: 'inherit',
                 },
                 '& .MuiTypography-colorTextSecondary': {
-                  color: '#C9BEC8',
+                  color: 'text.secondary',
                 },
                 '& .MuiOutlinedInput-root': {
-                  color: '#FAF7F2',
-                  backgroundColor: 'rgba(250,247,242,0.05)',
+                  color: 'text.primary',
+                  backgroundColor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(250,247,242,0.05)' : 'rgba(255,255,255,0.82)',
                   '& fieldset': {
-                    borderColor: 'rgba(250,247,242,0.14)',
+                    borderColor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(250,247,242,0.14)' : 'rgba(69,53,75,0.18)',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(185,152,90,0.34)',
+                    borderColor: 'secondary.main',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#B9985A',
+                    borderColor: 'secondary.main',
                   },
                 },
                 '& .MuiInputLabel-root': {
-                  color: '#C9BEC8',
+                  color: 'text.secondary',
                 },
                 '& .MuiInputLabel-root.Mui-focused': {
-                  color: '#D1B486',
+                  color: 'secondary.main',
                 },
                 '& .MuiSvgIcon-root': {
-                  color: '#C9BEC8',
+                  color: 'text.secondary',
                 },
               }}
             >
@@ -184,22 +202,26 @@ const Login = () => {
 
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-              <Box component="form" autoComplete="off" onSubmit={handleSubmit} noValidate>
+              <Box component="form" autoComplete="on" onSubmit={handleSubmit} noValidate>
                 <TextField
                   required
                   fullWidth
                   label="Email address"
                   type="email"
-                  name="no-autofill-email"
+                  name="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="off"
+                  autoComplete="username"
                   inputProps={{
-                    autoComplete: 'off',
+                    autoComplete: 'username',
+                    readOnly: !credentialsEditable,
                   }}
                   InputProps={{
                     startAdornment: <EmailIcon sx={{ mr: 1, color: 'action.active' }} />,
                   }}
+                  onFocus={enableCredentialSuggestions}
+                  onMouseDown={enableCredentialSuggestions}
                   sx={{ mb: 2 }}
                 />
 
@@ -208,16 +230,20 @@ const Login = () => {
                   fullWidth
                   label="Password"
                   type="password"
-                  name="no-autofill-password"
+                  name="password"
+                  id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   inputProps={{
-                    autoComplete: 'new-password',
+                    autoComplete: isSignUp ? 'new-password' : 'current-password',
+                    readOnly: !credentialsEditable && !isSignUp,
                   }}
                   InputProps={{
                     startAdornment: <LockIcon sx={{ mr: 1, color: 'action.active' }} />,
                   }}
+                  onFocus={enableCredentialSuggestions}
+                  onMouseDown={enableCredentialSuggestions}
                   sx={{ mb: isSignUp ? 2 : 3 }}
                 />
 
@@ -227,7 +253,8 @@ const Login = () => {
                     fullWidth
                     label="Confirm password"
                     type="password"
-                    name="no-autofill-confirm-password"
+                    name="confirmPassword"
+                    id="confirm-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     autoComplete="new-password"

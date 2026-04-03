@@ -39,7 +39,7 @@ const Navbar = () => {
             border: '1px solid',
             borderColor: 'divider',
             backgroundColor: (theme) =>
-              theme.palette.mode === 'dark' ? 'rgba(33,26,36,0.82)' : 'rgba(36,29,40,0.78)',
+              theme.palette.mode === 'dark' ? 'rgba(33,26,36,0.82)' : 'rgba(255,253,249,0.86)',
             color: 'text.primary',
             justifyContent: 'space-between',
             gap: 2,

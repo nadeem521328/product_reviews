@@ -256,9 +256,13 @@ const Search = () => {
               p: 3.5,
               borderRadius: '18px',
               height: '100%',
-              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
-              color: '#FAF7F2',
-              borderColor: 'rgba(185, 152, 90, 0.16)',
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))'
+                  : 'linear-gradient(160deg, rgba(255,253,249,0.98), rgba(244,236,226,0.96))',
+              color: 'text.primary',
+              borderColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
             }}
           >
             <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
@@ -268,7 +272,13 @@ const Search = () => {
             <Typography variant="h3" sx={{ mb: 2 }}>
               Turn raw reviews into a clean sentiment report.
             </Typography>
-            <Typography sx={{ mb: 3, color: 'rgba(212, 200, 210, 0.88)' }}>
+            <Typography
+              sx={{
+                mb: 3,
+                color: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(212, 200, 210, 0.88)' : 'rgba(47, 39, 52, 0.78)',
+              }}
+            >
               Choose how you want to bring reviews in, clean them if needed, then move straight into the dashboard.
             </Typography>
             <Stack spacing={2}>
@@ -282,9 +292,13 @@ const Search = () => {
                   sx={{
                     p: 2,
                     borderRadius: '18px',
-                    background: 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))',
+                    background: (theme) =>
+                      theme.palette.mode === 'dark'
+                        ? 'linear-gradient(160deg, rgba(250,247,242,0.06), rgba(185,152,90,0.04))'
+                        : 'linear-gradient(160deg, rgba(255,255,255,0.84), rgba(185,152,90,0.08))',
                     border: '1px solid',
-                    borderColor: 'rgba(250, 247, 242, 0.08)',
+                    borderColor: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(250, 247, 242, 0.08)' : 'rgba(69, 53, 75, 0.08)',
                     transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
                     boxShadow: '0 12px 28px rgba(12, 10, 16, 0.22)',
                     '@media (hover: hover)': {
@@ -308,49 +322,55 @@ const Search = () => {
             sx={{
               p: { xs: 2.5, md: 4 },
               borderRadius: '18px',
-              background: 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))',
-              color: '#FAF7F2',
-              borderColor: 'rgba(185, 152, 90, 0.16)',
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(160deg, rgba(36,29,40,0.98), rgba(49,39,54,0.94))'
+                  : 'linear-gradient(160deg, rgba(255,253,249,0.98), rgba(244,236,226,0.96))',
+              color: 'text.primary',
+              borderColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.16)' : 'rgba(69, 53, 75, 0.16)',
               '& .MuiTypography-root': {
                 color: 'inherit',
               },
               '& .MuiTypography-colorTextSecondary': {
-                color: '#C9BEC8',
+                color: 'text.secondary',
               },
               '& .MuiOutlinedInput-root': {
-                color: '#FAF7F2',
-                backgroundColor: 'rgba(250,247,242,0.05)',
+                color: 'text.primary',
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(250,247,242,0.05)' : 'rgba(255,255,255,0.82)',
                 '& fieldset': {
-                  borderColor: 'rgba(250,247,242,0.14)',
+                  borderColor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(250,247,242,0.14)' : 'rgba(69,53,75,0.18)',
                 },
                 '&:hover fieldset': {
-                  borderColor: 'rgba(185,152,90,0.34)',
+                  borderColor: 'secondary.main',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#B9985A',
+                  borderColor: 'secondary.main',
                 },
               },
               '& .MuiInputLabel-root': {
-                color: '#C9BEC8',
+                color: 'text.secondary',
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#D1B486',
+                color: 'secondary.main',
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#B9985A',
+                backgroundColor: 'secondary.main',
               },
               '& .MuiTab-root': {
-                color: '#C9BEC8',
+                color: 'text.secondary',
               },
               '& .MuiTab-root.Mui-selected': {
-                color: '#FAF7F2',
+                color: 'text.primary',
               },
             }}
           >
             <Typography variant="h4" sx={{ mb: 1 }}>
               Review workspace
             </Typography>
-            <Typography sx={{ mb: 3, color: '#C9BEC8' }}>
+            <Typography sx={{ mb: 3, color: 'text.secondary' }}>
               Load reviews, clean them, and send them to the existing backend analyzer without changing its logic.
             </Typography>
 

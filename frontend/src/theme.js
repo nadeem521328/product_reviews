@@ -43,33 +43,47 @@ const baseTheme = {
     },
     MuiCard: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           position: 'relative',
           isolation: 'isolate',
           overflow: 'hidden',
-          backgroundColor: '#241D28',
-          border: '1px solid rgba(185, 152, 90, 0.14)',
-          boxShadow: '0 24px 60px rgba(12, 10, 16, 0.30)',
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${
+            theme.palette.mode === 'dark' ? 'rgba(185, 152, 90, 0.14)' : 'rgba(69, 53, 75, 0.14)'
+          }`,
+          boxShadow:
+            theme.palette.mode === 'dark'
+              ? '0 24px 60px rgba(12, 10, 16, 0.30)'
+              : '0 20px 48px rgba(68, 49, 74, 0.12)',
           transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
           '&::before': {
             content: '""',
             position: 'absolute',
             inset: '-18px',
             borderRadius: 'inherit',
-            background: 'radial-gradient(circle at top, rgba(69, 53, 75, 0.24) 0%, rgba(185, 152, 90, 0.16) 40%, rgba(185, 152, 90, 0) 74%)',
+            background:
+              theme.palette.mode === 'dark'
+                ? 'radial-gradient(circle at top, rgba(162, 138, 168, 0.26) 0%, rgba(198, 164, 106, 0.18) 40%, rgba(198, 164, 106, 0) 74%)'
+                : 'radial-gradient(circle at top, rgba(69, 53, 75, 0.14) 0%, rgba(185, 152, 90, 0.12) 40%, rgba(185, 152, 90, 0) 74%)',
             filter: 'blur(22px)',
-            opacity: 0.9,
+            opacity: theme.palette.mode === 'dark' ? 0.95 : 0.8,
             zIndex: -1,
             pointerEvents: 'none',
           },
           '@media (hover: hover)': {
             '&:hover': {
               transform: 'translateY(-6px)',
-              boxShadow: '0 30px 70px rgba(12, 10, 16, 0.42)',
-              borderColor: 'rgba(185, 152, 90, 0.28)',
+              boxShadow:
+                theme.palette.mode === 'dark'
+                  ? '0 30px 70px rgba(12, 10, 16, 0.42)'
+                  : '0 24px 56px rgba(68, 49, 74, 0.16)',
+              borderColor:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(185, 152, 90, 0.28)'
+                  : 'rgba(69, 53, 75, 0.24)',
             },
           },
-        },
+        }),
       },
     },
     MuiButton: {
@@ -112,9 +126,9 @@ const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2C2230',
-      dark: '#1F1822',
-      light: '#45354B',
+      main: '#45354B',
+      dark: '#2C2230',
+      light: '#6B5872',
     },
     secondary: {
       main: '#B9985A',
@@ -122,14 +136,14 @@ const lightTheme = createTheme({
       light: '#D1B486',
     },
     background: {
-      default: '#171319',
-      paper: '#241D28',
+      default: '#F8F3EC',
+      paper: '#FFFDF9',
     },
     text: {
-      primary: '#FAF7F2',
-      secondary: '#C9BEC8',
+      primary: '#2F2734',
+      secondary: '#6F6474',
     },
-    divider: 'rgba(250, 247, 242, 0.10)',
+    divider: 'rgba(69, 53, 75, 0.12)',
     sentiment: {
       positive: '#7AA787',
       neutral: '#B9985A',
@@ -137,24 +151,12 @@ const lightTheme = createTheme({
       mixed: '#8E7696',
     },
     surface: {
-      main: '#241D28',
-      muted: '#312736',
-      strong: '#FAF7F2',
+      main: '#FFFDF9',
+      muted: '#F2E9DE',
+      strong: '#2F2734',
     },
   },
 });
-
-lightTheme.components.MuiCard.styleOverrides.root['&::before'] = {
-  content: '""',
-  position: 'absolute',
-  inset: '-18px',
-  borderRadius: 'inherit',
-  background: 'radial-gradient(circle at top, rgba(69, 53, 75, 0.24) 0%, rgba(185, 152, 90, 0.16) 40%, rgba(185, 152, 90, 0) 74%)',
-  filter: 'blur(22px)',
-  opacity: 0.9,
-  zIndex: -1,
-  pointerEvents: 'none',
-};
 
 const darkTheme = createTheme({
   ...baseTheme,
@@ -192,18 +194,6 @@ const darkTheme = createTheme({
     },
   },
 });
-
-darkTheme.components.MuiCard.styleOverrides.root['&::before'] = {
-  content: '""',
-  position: 'absolute',
-  inset: '-22px',
-  borderRadius: 'inherit',
-  background: 'radial-gradient(circle at top, rgba(162, 138, 168, 0.26) 0%, rgba(198, 164, 106, 0.18) 40%, rgba(198, 164, 106, 0) 74%)',
-  filter: 'blur(26px)',
-  opacity: 1,
-  zIndex: -1,
-  pointerEvents: 'none',
-};
 
 export const getTheme = (mode) => (mode === 'dark' ? darkTheme : lightTheme);
 
