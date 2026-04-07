@@ -20,9 +20,108 @@ import api, { analyzeReview } from '../services/api';
 import ReviewCounter from '../components/ReviewCounter';
 
 const inputLabels = ['Manual text', 'TXT file', 'CSV file'];
+const OPTIONAL_NOISE_PATTERNS = [
+  /^Click to play video$/i,
+  /^Customer image(?:s)?$/i,
+  /^Read more$/i,
+  /^(?:One\s+person|[\d,]+\s+people?)\s+found\s+this\s+helpful\.?$/i,
+  /^Helpful$/i,
+];
+const MANDATORY_NOISE_PATTERNS = [
+  /^Verified Purchase$/i,
+  /^Report(?: abuse)?$/i,
+  /^\d+(?:\.\d+)?\s+out of 5 stars.*$/i,
+  /^Reviewed in .* on .*$/i,
+  /^(?:Flavour(?: Name)?|Flavor(?: Name)?|Colour|Color|Size|Style Name|Pattern Name|Pack of|Material Type)\s*:.*$/i,
+];
+const VERIFIED_PURCHASE_PATTERN = /Verified Purchase/i;
+const REPORT_PATTERN = /^Report(?: abuse)?$/i;
+
+const isNoiseLine = (line) => {
+  const normalized = line.trim();
+  if (!normalized) {
+    return false;
+  }
+  return (
+    OPTIONAL_NOISE_PATTERNS.some((pattern) => pattern.test(normalized))
+    || MANDATORY_NOISE_PATTERNS.some((pattern) => pattern.test(normalized))
+  );
+};
+
+const normalizeExtractedReview = (lines) => {
+  let text = lines.join('\n');
+  text = text.replace(/\n\s*\n+/g, '\n\n');
+  text = text.replace(/[ \t]+/g, ' ');
+  text = text.replace(/\b(?:One\s+person|[\d,]+\s+people?)\s+found\s+this\s+helpful\.?/gi, '');
+  return text.trim();
+};
+
+const extractReviewTexts = (raw) => {
+  const lines = raw.split(/\r?\n/).map((line) => line.trim());
+  const reviews = [];
+  let collecting = false;
+  let collectedLines = [];
+
+  const flushCollected = () => {
+    if (!collectedLines.length) {
+      return;
+    }
+
+    const text = normalizeExtractedReview(collectedLines);
+    if (text) {
+      reviews.push(text);
+    }
+    collectedLines = [];
+  };
+
+  for (const line of lines) {
+    if (!line) {
+      if (collecting && collectedLines.length && collectedLines[collectedLines.length - 1] !== '') {
+        collectedLines.push('');
+      }
+      continue;
+    }
+
+    if (!collecting) {
+      const markerMatch = line.match(VERIFIED_PURCHASE_PATTERN);
+      if (markerMatch) {
+        collecting = true;
+
+        const markerIndex = line.toLowerCase().indexOf('verified purchase');
+        const tail = markerIndex >= 0
+          ? line.slice(markerIndex + 'verified purchase'.length).replace(/^[:\-\s]+|[:\-\s]+$/g, '')
+          : '';
+
+        if (tail && !isNoiseLine(tail)) {
+          collectedLines.push(tail);
+        }
+      }
+      continue;
+    }
+
+    if (REPORT_PATTERN.test(line)) {
+      flushCollected();
+      collecting = false;
+      continue;
+    }
+
+    if (isNoiseLine(line)) {
+      continue;
+    }
+
+    collectedLines.push(line);
+  }
+
+  if (collecting && collectedLines.length) {
+    flushCollected();
+  }
+
+  return reviews;
+};
 
 const Search = () => {
   const [reviewText, setReviewText] = useState('');
+  const [originalReviewText, setOriginalReviewText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [csvSelectedFile, setCsvSelectedFile] = useState(null);
   const [extractLoading, setExtractLoading] = useState(false);
@@ -36,6 +135,9 @@ const Search = () => {
 
   const updateReviewText = (value) => {
     setReviewText(value);
+    if (!value.trim()) {
+      setOriginalReviewText('');
+    }
     const byteLength = new TextEncoder().encode(value).length;
     setInputTooLarge(byteLength > 50000);
   };
@@ -150,55 +252,11 @@ const Search = () => {
       return;
     }
 
-    const reviews = [];
-    const verifiedRegex = /Verified Purchase\s*\n([\s\S]*?)(?=Customer image|Helpful|Report|\n[A-Za-z][\w\s]+?\n\d+\.\d+\s+out of 5 stars|$)/gi;
-    let match;
-
-    while ((match = verifiedRegex.exec(raw)) !== null) {
-      const text = match[1]
-        .replace(/\n\s*\n+/g, ' ')
-        .replace(/\b(Flavour Name:|Size:|Pack of|Reviewed in|Verified Purchase)\b/gi, '')
-        .replace(/Customer image|Helpful|Report/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      if (text.length > 10 && !text.match(/^Flavour\s*Name/i)) {
-        reviews.push(text);
-      }
+    if (!originalReviewText.trim()) {
+      setOriginalReviewText(reviewText);
     }
 
-    if (!reviews.length) {
-      const ratingRegex = /\d+\.\d+\s+out of 5 stars[\s\S]*?(?=\n[A-Za-z][\w\s]+?\n\d+\.\d+\s+out of 5 stars|$)/gi;
-      while ((match = ratingRegex.exec(raw)) !== null) {
-        const candidate = match[0]
-          .replace(/\d+\.\d+\s+out of 5 stars/gi, '')
-          .replace(/\n\s*\n+/g, ' ')
-          .replace(/(Customer image|Helpful|Report|Flavour Name:|Size:)/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (candidate.length > 10) {
-          reviews.push(candidate);
-        }
-      }
-    }
-
-    if (!reviews.length) {
-      let fallback = raw
-        .split(/\n{2,}/)
-        .map((paragraph) => paragraph.trim())
-        .filter((paragraph) => paragraph.length > 15 && !paragraph.toLowerCase().includes('out of 5 stars'));
-
-      if (!fallback.length) {
-        fallback = raw
-          .split('\n')
-          .map((line) => line.trim())
-          .filter((line) => line.length > 15 && !line.toLowerCase().includes('out of 5 stars'));
-      }
-
-      if (fallback.length) {
-        reviews.push(...fallback.slice(0, 20));
-      }
-    }
+    const reviews = extractReviewTexts(raw);
 
     updateReviewText(reviews.length ? reviews.join('\n\n') : raw);
     setError(reviews.length ? `Extracted ${reviews.length} clean review(s).` : 'No structured reviews found. Raw text was kept.');
@@ -236,7 +294,10 @@ const Search = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await analyzeReview(reviewText);
+      const rawSource = originalReviewText.trim();
+      const hasRawMarketplaceMarkers = /verified purchase/i.test(rawSource) && /report/i.test(rawSource);
+      const reviewTextForAnalysis = hasRawMarketplaceMarkers ? rawSource : reviewText;
+      const data = await analyzeReview(reviewTextForAnalysis, rawSource || reviewText);
       navigate('/dashboard', { state: { data } });
     } catch (err) {
       setError('Error analyzing review. Please try again.');

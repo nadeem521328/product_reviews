@@ -9,31 +9,162 @@ if os.name == 'nt':  # Windows
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_jwt_extended import (
+    JWTManager,
+    jwt_required,
+    create_access_token,
+    verify_jwt_in_request,
+    get_jwt_identity,
+)
+from flask_jwt_extended.exceptions import JWTExtendedException
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
-from datetime import timedelta
+from datetime import timedelta, datetime
+from dotenv import load_dotenv
 from templates import detect_aspects
 from sentiment_model_fixed import load_sentiment_model
+from extract_reviews import extract_review_texts
 from feedback_generator import generate_customers_say, generate_aspect_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
 import pandas as pd
+from jwt.exceptions import InvalidTokenError
 
+load_dotenv()
+
+def _is_truthy(value, default=False):
+    if value is None:
+        return default
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+def _parse_origins(origins_str):
+    if not origins_str:
+        return ["http://localhost:5173"]
+    return [origin.strip() for origin in origins_str.split(",") if origin.strip()]
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'your-super-secret-jwt-key-change-in-prod'  # Change in prod
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-only-secret-change-me')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(os.getenv('JWT_EXPIRES_HOURS', '24')))
+app.config['JWT_VERIFY_SUB'] = False
+flask_debug = _is_truthy(os.getenv('FLASK_DEBUG'), default=False)
+
+if not flask_debug and app.config['JWT_SECRET_KEY'] == 'dev-only-secret-change-me':
+    raise RuntimeError("JWT_SECRET_KEY must be set for non-debug deployments.")
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
-CORS(app, origins=["http://localhost:5173"])  # Enable CORS for Vite frontend
+
+@jwt.user_identity_loader
+def user_identity_lookup(user_id):
+    return str(user_id)
+
+cors_origins = _parse_origins(os.getenv('CORS_ORIGINS'))
+CORS(app, origins=cors_origins)
+debug_logs = _is_truthy(os.getenv('DEBUG_LOGS'), default=False)
 
 # Fixed model loader (offline cache)
 sentiment_analyzer = load_sentiment_model()
-print(f"App startup analyzer: {sentiment_analyzer is not None}")
+print(f"App startup analyzer loaded: {sentiment_analyzer is not None}")
+
+
+def classify_with_threshold(result):
+    label = result['label']
+    score = result['score']
+    if 'star' in label:
+        stars = int(label.split()[0])
+        if stars <= 2:
+            sentiment = 'negative'
+        elif stars == 3:
+            sentiment = 'neutral'
+        else:
+            sentiment = 'positive'
+    elif label == 'LABEL_0' or label == 'Negative' or label.lower() == 'negative':
+        sentiment = 'negative'
+    elif label == 'LABEL_1' or label == 'Neutral' or label.lower() == 'neutral':
+        sentiment = 'neutral'
+    elif label == 'LABEL_2' or label == 'Positive' or label.lower() == 'positive':
+        sentiment = 'positive'
+    else:
+        sentiment = label.lower()
+    return sentiment, score
+
+
+def classify_with_keyword_fallback(text):
+    positive_words = {
+        "good", "great", "excellent", "amazing", "awesome", "best", "love", "liked",
+        "satisfied", "happy", "smooth", "fast", "perfect", "fantastic", "nice", "helpful"
+    }
+    negative_words = {
+        "bad", "worst", "poor", "terrible", "awful", "hate", "hated", "slow", "broken",
+        "issue", "problem", "bug", "disappointed", "disappointing", "waste", "useless", "refund"
+    }
+
+    words = [w.strip(".,!?;:()[]{}\"'").lower() for w in text.split()]
+    pos_hits = sum(1 for w in words if w in positive_words)
+    neg_hits = sum(1 for w in words if w in negative_words)
+
+    if pos_hits > neg_hits:
+        return "positive", 0.62
+    if neg_hits > pos_hits:
+        return "negative", 0.62
+    return "neutral", 0.5
+
+
+def normalize_reviews(review_text):
+    extracted_reviews = extract_review_texts(review_text)
+    if extracted_reviews:
+        return extracted_reviews
+    return [line.strip() for line in review_text.split('\n') if line.strip()]
+
+
+def analyze_review_lines(review_text):
+    reviews = normalize_reviews(review_text)
+    positive = 0
+    neutral = 0
+    negative = 0
+    individual_results = []
+
+    for i, review in enumerate(reviews, start=1):
+        review_to_analyze = review[:2000] if len(review) > 2000 else review
+        if sentiment_analyzer is None:
+            sentiment, confidence = classify_with_keyword_fallback(review_to_analyze)
+        else:
+            result = sentiment_analyzer(review_to_analyze)[0]
+            sentiment, confidence = classify_with_threshold(result)
+            if debug_logs:
+                print(f"DEBUG Review {i}: raw={result}, classified={sentiment}({confidence:.3f})")
+
+        individual_results.append({
+            'review_number': i,
+            'text': review,
+            'sentiment': sentiment,
+            'confidence': round(confidence, 2)
+        })
+
+        if sentiment == "positive":
+            positive += 1
+        elif sentiment == "neutral":
+            neutral += 1
+        else:
+            negative += 1
+
+    summary = {
+        'total_reviews': len(reviews),
+        'positive': positive,
+        'neutral': neutral,
+        'negative': negative
+    }
+
+    if positive >= neutral and positive >= negative:
+        overall_sentiment = 'positive'
+    elif negative >= neutral:
+        overall_sentiment = 'negative'
+    else:
+        overall_sentiment = 'neutral'
+
+    return reviews, individual_results, summary, overall_sentiment
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,6 +173,13 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+
+class AnalysisHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    original_review_text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 with app.app_context():
     db.create_all()
@@ -88,23 +226,36 @@ def login():
 
 @app.route('/analyze-review', methods=['POST'])
 def analyze_review():
-    print("=== DEBUG /analyze-review ===")
-    print(f"DEBUG: sentiment_analyzer active: {sentiment_analyzer is not None}")
-    print(f"Authorization: '{request.headers.get('Authorization')}'")
-    print(f"Content-Type: '{request.headers.get('Content-Type')}'")
-    print(f"All headers: {dict(request.headers)}")
-    print("============================")
+    if debug_logs:
+        print("=== DEBUG /analyze-review ===")
+        print(f"DEBUG: sentiment_analyzer active: {sentiment_analyzer is not None}")
+        print(f"Content-Type: '{request.headers.get('Content-Type')}'")
+        print("============================")
     data = request.get_json()
     review_text = data.get('review_text', '')
+    cleaned_review_text = review_text.strip()
 
-    # Split reviews and analyze individually (to avoid 512 token limit)
-    reviews_list = [line.strip() for line in review_text.split('\n') if line.strip()]
+    current_user_id = None
+    try:
+        verify_jwt_in_request(optional=True)
+        current_user_id = get_jwt_identity()
+    except (JWTExtendedException, InvalidTokenError) as auth_error:
+        if debug_logs:
+            print(f"DEBUG: ignoring invalid optional JWT on /analyze-review: {auth_error}")
 
     if not review_text:
         return jsonify({'error': 'No review text provided'}), 400
 
-    # Split reviews and analyze individually (to avoid 512 token limit)
-    reviews_list = [line.strip() for line in review_text.split('\n') if line.strip()]
+    if current_user_id and cleaned_review_text:
+        history_entry = AnalysisHistory(
+            user_id=int(current_user_id),
+            original_review_text=cleaned_review_text
+        )
+        db.session.add(history_entry)
+        db.session.commit()
+
+    # Extract review bodies from raw marketplace text when possible.
+    reviews_list = normalize_reviews(review_text)
     
     # Detect aspects from each review
     all_aspects = set()
@@ -114,74 +265,12 @@ def analyze_review():
     
     aspects = list(all_aspects)
 
-    # Inline individual sentiment analysis for consistent neutral detection
-    def classify_with_threshold(result):
-        label = result['label']
-        score = result['score']
-        if 'star' in label:
-            stars = int(label.split()[0])
-            if stars <= 2:
-                sentiment = 'negative'
-            elif stars == 3:
-                sentiment = 'neutral'
-            else:
-                sentiment = 'positive'
-        elif label == 'LABEL_0' or label == 'Negative' or label.lower() == 'negative':
-            sentiment = 'negative'
-        elif label == 'LABEL_1' or label == 'Neutral' or label.lower() == 'neutral':
-            sentiment = 'neutral'
-        elif label == 'LABEL_2' or label == 'Positive' or label.lower() == 'positive':
-            sentiment = 'positive'
-        else:
-            sentiment = label.lower()
-        return sentiment, score
-
-    reviews = [line.strip() for line in review_text.split('\n') if line.strip()]
-    positive = 0
-    neutral = 0
-    negative = 0
-    individual_results = []
-
-    for i, review in enumerate(reviews, start=1):
-        review_to_analyze = review[:2000] if len(review) > 2000 else review
-        if sentiment_analyzer is None:
-            sentiment = 'neutral'
-            confidence = 0.5
-        else:
-            result = sentiment_analyzer(review_to_analyze)[0]
-            sentiment, confidence = classify_with_threshold(result)
-            print(f"DEBUG Review {i}: raw={result}, classified={sentiment}({confidence:.3f})")
-        individual_results.append({
-            'review_number': i,
-            'text': review,
-            'sentiment': sentiment,
-            'confidence': round(confidence, 2)
-        })
-        if sentiment == "positive":
-            positive += 1
-        elif sentiment == "neutral":
-            neutral += 1
-        else:
-            negative += 1
-
-    summary = {
-        'total_reviews': len(reviews),
-        'positive': positive,
-        'neutral': neutral,
-        'negative': negative
-    }
-    print(f"DEBUG Final summary: {summary}")
-    positive_count = positive
-    neutral_count = neutral
-    negative_count = negative
-    
-    # Determine overall sentiment based on majority
-    if positive_count >= neutral_count and positive_count >= negative_count:
-        overall_sentiment = 'positive'
-    elif negative_count >= neutral_count:
-        overall_sentiment = 'negative'
-    else:
-        overall_sentiment = 'neutral'
+    reviews, individual_results, summary, overall_sentiment = analyze_review_lines(review_text)
+    if debug_logs:
+        print(f"DEBUG Final summary: {summary}")
+    positive_count = summary['positive']
+    neutral_count = summary['neutral']
+    negative_count = summary['negative']
 
     # Prepare aspect breakdown with per-aspect sentiment
     aspect_breakdown = {}
@@ -254,6 +343,47 @@ def analyze_review():
 
     return jsonify(response_data)
 
+
+@app.route('/history', methods=['GET'])
+@jwt_required()
+def get_history():
+    current_user_id = get_jwt_identity()
+    history_entries = (
+        AnalysisHistory.query
+        .filter_by(user_id=int(current_user_id))
+        .order_by(AnalysisHistory.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    history_payload = []
+    history_reviews = []
+
+    for entry in history_entries:
+        _, individual_results, _, overall_sentiment = analyze_review_lines(entry.original_review_text)
+        history_payload.append({
+            'id': entry.id,
+            'original_review_text': entry.original_review_text,
+            'sentiment': overall_sentiment,
+            'created_at': entry.created_at.isoformat() + 'Z',
+            'reviews': individual_results,
+        })
+
+        for review in individual_results:
+            history_reviews.append({
+                'history_id': entry.id,
+                'created_at': entry.created_at.isoformat() + 'Z',
+                'review_number': len(history_reviews) + 1,
+                'text': review['text'],
+                'sentiment': review['sentiment'],
+                'confidence': review['confidence'],
+            })
+
+    return jsonify({
+        'history': history_payload,
+        'history_reviews': history_reviews,
+    })
+
 @app.route('/analyze-csv', methods=['POST'])
 @jwt_required()
 def analyze_csv():
@@ -282,4 +412,8 @@ def analyze_csv():
         return jsonify({'error': f'Error processing CSV: {str(e)}'}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(
+        host=os.getenv('FLASK_HOST', '0.0.0.0'),
+        port=int(os.getenv('PORT', '5000')),
+        debug=flask_debug
+    )

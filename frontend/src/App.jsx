@@ -1,16 +1,19 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Box, Container, Typography } from '@mui/material';
+import { CssBaseline, Box, Container, Typography, CircularProgress } from '@mui/material';
 import { ThemeProviderWrapper, useThemeContext } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { getTheme } from './theme';
-import Home from './pages/Home';
-import Search from './pages/Search';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import IndividualSentimentsPage from './pages/IndividualSentimentsPage';
 import Navbar from './components/Navbar';
 import './App.css';
+
+const Home = lazy(() => import('./pages/Home'));
+const Search = lazy(() => import('./pages/Search'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Login = lazy(() => import('./pages/Login'));
+const IndividualSentimentsPage = lazy(() => import('./pages/IndividualSentimentsPage'));
+const History = lazy(() => import('./pages/History'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -73,6 +76,20 @@ function AppShell({ children }) {
   );
 }
 
+function RouteLoader() {
+  return (
+    <Box
+      sx={{
+        minHeight: '60vh',
+        display: 'grid',
+        placeItems: 'center',
+      }}
+    >
+      <CircularProgress color="secondary" />
+    </Box>
+  );
+}
+
 function InnerApp() {
   const { mode } = useThemeContext();
   const theme = getTheme(mode);
@@ -83,14 +100,17 @@ function InnerApp() {
       <Router>
         <div className="App">
           <AppShell>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/individual-sentiments" element={<ProtectedRoute><IndividualSentimentsPage /></ProtectedRoute>} />
-            </Routes>
+            <Suspense fallback={<RouteLoader />}>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+                <Route path="/individual-sentiments" element={<ProtectedRoute><IndividualSentimentsPage /></ProtectedRoute>} />
+              </Routes>
+            </Suspense>
           </AppShell>
         </div>
       </Router>

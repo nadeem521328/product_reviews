@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000'; // Adjust this to your backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -24,9 +24,21 @@ export const analyzeProduct = async (productId) => {
   }
 };
 
-export const analyzeReview = async (reviewText) => {
+export const analyzeReview = async (reviewText, originalReviewText = reviewText) => {
   try {
-    const response = await api.post('/analyze-review', { review_text: reviewText });
+    const response = await api.post('/analyze-review', {
+      review_text: reviewText,
+      original_review_text: originalReviewText,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchHistory = async () => {
+  try {
+    const response = await api.get('/history');
     return response.data;
   } catch (error) {
     throw error;

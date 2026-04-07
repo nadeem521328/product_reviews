@@ -1,36 +1,42 @@
 import os
 
-os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
-# Removed expired HF_TOKEN and offline mode - models now cached in ~/.cache/huggingface
-# Can set HF_HUB_OFFLINE=1 after first run for true offline
+from transformers import logging, pipeline
 
-from transformers import pipeline, logging
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["HF_HUB_DISABLE_IMPLICIT_TOKEN"] = "1"
 logging.set_verbosity_error()
 
-# Local cache directory
-CACHE_DIR = "./model_cache"
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+def _is_truthy(value, default=False):
+    if value is None:
+        return default
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+CACHE_DIR = os.getenv("MODEL_CACHE_DIR", "./model_cache")
+MODEL_NAME = os.getenv("SENTIMENT_MODEL_NAME", "cardiffnlp/twitter-roberta-base-sentiment")
+OFFLINE_MODE = _is_truthy(os.getenv("SENTIMENT_MODEL_OFFLINE"), default=False)
+
+if OFFLINE_MODE:
+    os.environ["HF_HUB_OFFLINE"] = "1"
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 
 def load_sentiment_model():
     """
-    Load sentiment analysis model from CACHE (offline only - fixes expired HF token).
+    Load sentiment model with configurable offline/online behavior.
     """
-    # Robust public model - no auth issues
-    model_name = "cardiffnlp/twitter-roberta-base-sentiment"
-    print("✓ Loading cached Twitter-RoBERTa (offline mode - no HF auth needed)")
-    cache_dir = CACHE_DIR
+    mode_text = "offline cache only" if OFFLINE_MODE else "online or cache"
+    print(f"Loading sentiment model ({mode_text})")
     try:
-        print("✓ Loading cached Twitter-RoBERTa (offline mode)")
         return pipeline(
             "sentiment-analysis",
-            model=model_name,
-            cache_dir=cache_dir,
-            local_files_only=True
+            model=MODEL_NAME,
+            cache_dir=CACHE_DIR,
+            local_files_only=OFFLINE_MODE,
+            token=False,
         )
     except Exception as e:
         print(f"Failed to load sentiment model: {e}")
         print("Using fallback logic.")
         return None
-
