@@ -171,47 +171,111 @@ def generate_aspect_customers_say(aspect_breakdown, summary_data):
     
     pos_ratio = pos / total
     neg_ratio = neg / total
-    neu_ratio = neu / total
-    
-    # Analyze top aspects
-    if aspect_breakdown:
-        aspect_scores = {}
-        for aspect, counts in aspect_breakdown.items():
-            p = counts.get('positive', 0)
-            n = counts.get('neutral', 0)
-            g = counts.get('negative', 0)
-            total_aspect = p + n + g
-            if total_aspect > 0:
-                score = (p - g) / total_aspect  # Positive minus negative ratio
-                aspect_scores[aspect] = score
-        
-        top_positive = [(a, s) for a, s in aspect_scores.items() if s > 0]
-        top_positive = sorted(top_positive, key=lambda x: x[1], reverse=True)[:2]
-        top_negative = [(a, s) for a, s in aspect_scores.items() if s < 0]
-        top_negative = sorted(top_negative, key=lambda x: x[1])[:2]
+
+    def _format_aspect_name(name):
+        return name.replace("_", " ")
+
+    # Build per-aspect stats and ignore the generic fallback bucket for highlights.
+    aspect_stats = []
+    for aspect, counts in (aspect_breakdown or {}).items():
+        if aspect == "general":
+            continue
+        p = counts.get('positive', 0)
+        n = counts.get('neutral', 0)
+        g = counts.get('negative', 0)
+        total_aspect = p + n + g
+        if total_aspect == 0:
+            continue
+        score = (p - g) / total_aspect  # Positive minus negative signal
+        aspect_stats.append({
+            "name": aspect,
+            "pretty": _format_aspect_name(aspect),
+            "positive": p,
+            "neutral": n,
+            "negative": g,
+            "total": total_aspect,
+            "score": score,
+        })
+
+    # Rank important aspects by coverage first, then by signal strength.
+    most_discussed = sorted(
+        aspect_stats,
+        key=lambda x: (x["total"], abs(x["score"])),
+        reverse=True
+    )[:3]
+    strongest_positive = sorted(
+        [a for a in aspect_stats if a["score"] > 0],
+        key=lambda x: x["score"],
+        reverse=True
+    )[:2]
+    strongest_negative = sorted(
+        [a for a in aspect_stats if a["score"] < 0],
+        key=lambda x: x["score"]
+    )[:2]
+
+    sentences = []
+    # Overall summary sentence
+    if pos_ratio >= 0.6:
+        sentences.append(
+            f"Overall sentiment is favorable, with {pos} of {total} reviews classified as positive."
+        )
+    elif neg_ratio >= 0.6:
+        sentences.append(
+            f"Overall sentiment is unfavorable, with {neg} of {total} reviews classified as negative."
+        )
     else:
-        top_positive = []
-        top_negative = []
-    
-    # Build narrative
-    if pos_ratio > 0.6:
-        intro = "The product delivers a generally reliable and high-quality experience"
-        weaknesses = f", though it falls short in {', '.join([a for a, _ in top_negative])}" if top_negative else ""
-        strengths = ""
-        conclusion = ". While it performs well in most areas, some refinement could elevate it further."
-    elif neg_ratio > 0.6:
-        intro = "The product struggles to deliver a consistent or satisfactory experience"
-        strengths = f", with occasional strengths in {', '.join([a for a, _ in top_positive])}" if top_positive else ""
-        weaknesses = ""
-        conclusion = ". Noticeable shortcomings and inconsistent execution prevent it from meeting expectations."
+        sentences.append(
+            f"Customer sentiment is mixed across {total} reviews, with {pos} positive, {neu} neutral, and {neg} negative responses."
+        )
+
+    # Important aspect coverage sentence
+    if most_discussed:
+        discussed_parts = [
+            f"{a['pretty']} ({a['total']} mentions)" for a in most_discussed
+        ]
+        sentences.append(
+            f"The most discussed areas are {', '.join(discussed_parts)}."
+        )
+
+    # Positive aspect insights
+    if strongest_positive:
+        positive_parts = [
+            f"{a['pretty']} ({a['positive']} positive vs {a['negative']} negative)"
+            for a in strongest_positive
+        ]
+        sentences.append(
+            f"Key strengths appear in {', '.join(positive_parts)}."
+        )
+
+    # Negative aspect insights
+    if strongest_negative:
+        negative_parts = [
+            f"{a['pretty']} ({a['negative']} negative vs {a['positive']} positive)"
+            for a in strongest_negative
+        ]
+        sentences.append(
+            f"Primary concern areas are {', '.join(negative_parts)}."
+        )
+
+    # Closing sentence
+    if strongest_negative and strongest_positive:
+        sentences.append(
+            "This indicates a strong core experience with specific improvement opportunities in the weaker aspects."
+        )
+    elif strongest_negative:
+        sentences.append(
+            "Addressing these weaker areas is likely to improve overall customer satisfaction."
+        )
+    elif strongest_positive:
+        sentences.append(
+            "The product is performing consistently well in the aspects customers care about most."
+        )
     else:
-        intro = "The product offers a generally reliable and functional experience, but lacks consistency and refinement"
-        weaknesses = ""
-        strengths = ""
-        conclusion = ". While it performs adequately in most scenarios, noticeable shortcomings and average execution prevent it from delivering a truly high-quality or standout experience."
-    
-    feedback = intro + weaknesses + strengths + conclusion
-    return feedback
+        sentences.append(
+            "More aspect-specific review coverage would help provide sharper insight into strengths and weaknesses."
+        )
+
+    return " ".join(sentences)
 def generate_customers_say(summary_data, sample_reviews=None):
     """
     Convenience function to generate 'Customers Say' feedback.

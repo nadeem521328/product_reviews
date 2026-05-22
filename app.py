@@ -352,7 +352,7 @@ def get_history():
         AnalysisHistory.query
         .filter_by(user_id=int(current_user_id))
         .order_by(AnalysisHistory.created_at.desc())
-        .limit(5)
+        .limit(1)
         .all()
     )
 
