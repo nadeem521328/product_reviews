@@ -1,9 +1,11 @@
 import os
 
-from transformers import logging, pipeline
-
+os.environ["DISABLE_SAFETENSORS_CONVERSION"] = "1"
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["HF_HUB_DISABLE_IMPLICIT_TOKEN"] = "1"
+
+from transformers import logging, pipeline
+
 logging.set_verbosity_error()
 
 

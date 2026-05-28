@@ -36,6 +36,15 @@ export const analyzeReview = async (reviewText, originalReviewText = reviewText)
   }
 };
 
+export const importAmazonReviews = async (url) => {
+  try {
+    const response = await api.post('/import-amazon-reviews', { url });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const fetchHistory = async () => {
   try {
     const response = await api.get('/history');

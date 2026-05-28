@@ -16,7 +16,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import api, { analyzeReview } from '../services/api';
+import api, { analyzeReview, importAmazonReviews } from '../services/api';
 import ReviewCounter from '../components/ReviewCounter';
 
 const inputLabels = ['Manual text', 'TXT file', 'CSV file'];
@@ -125,6 +125,7 @@ const Search = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [csvSelectedFile, setCsvSelectedFile] = useState(null);
   const [extractLoading, setExtractLoading] = useState(false);
+  const [urlImportLoading, setUrlImportLoading] = useState(false);
   const [inputTooLarge, setInputTooLarge] = useState(false);
   const [inputMode, setInputMode] = useState(0);
   const [fileError, setFileError] = useState('');
@@ -259,7 +260,46 @@ const Search = () => {
     const reviews = extractReviewTexts(raw);
 
     updateReviewText(reviews.length ? reviews.join('\n\n') : raw);
-    setError(reviews.length ? `Extracted ${reviews.length} clean review(s).` : 'No structured reviews found. Raw text was kept.');
+    setError(reviews.length ? `Extracted ${reviews.length} clean review(s).` : 'Clean reviews are already ready for analysis.');
+  };
+
+  const handleAmazonUrlImport = async () => {
+    const amazonUrl = reviewText.trim();
+    if (!amazonUrl) {
+      setError('Paste an Amazon product URL in the review input area first.');
+      return;
+    }
+
+    setUrlImportLoading(true);
+    setError('');
+
+    try {
+      const data = await importAmazonReviews(amazonUrl);
+      const importedReviews = data.reviews || [];
+
+      if (!importedReviews.length) {
+        setError('No reviews were returned for this Amazon URL.');
+        return;
+      }
+
+      // Review population flow:
+      // replace the URL in the same textbox with normal review lines so the
+      // existing Analyze button can continue using the unchanged NLP pipeline.
+      updateReviewText(importedReviews.join('\n'));
+      setOriginalReviewText('');
+      setInputMode(0);
+      setSelectedFile(null);
+      setCsvSelectedFile(null);
+      setFileError('');
+      setCsvError('');
+
+      const sourceLabel = data.source === 'mock' ? 'fallback mock' : 'API';
+      setError(`Imported ${importedReviews.length} ${sourceLabel} review(s) for ASIN ${data.product?.asin || 'unknown'}.`);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Unable to import reviews from this Amazon URL.');
+    } finally {
+      setUrlImportLoading(false);
+    }
   };
 
   const handleCsvDirectAnalyze = async () => {
@@ -456,7 +496,7 @@ const Search = () => {
                 onChange={(e) => updateReviewText(e.target.value)}
                 required
                 disabled={inputTooLarge}
-                helperText="Paste Amazon raw data or cleaned review lines here."
+                helperText="Paste Amazon raw data, cleaned review lines, or an Amazon product URL here."
               />
 
               <ReviewCounter reviewText={reviewText} />
@@ -512,17 +552,26 @@ const Search = () => {
               )}
 
               {error && (
-                <Alert severity={error.startsWith('Extracted') ? 'success' : 'error'} sx={{ mt: 3 }}>
+                <Alert severity={error.startsWith('Extracted') || error.startsWith('Imported') || error.startsWith('Clean reviews') ? 'success' : 'error'} sx={{ mt: 3 }}>
                   {error}
                 </Alert>
               )}
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }}>
                 <Button
+                  onClick={handleAmazonUrlImport}
+                  variant="outlined"
+                  size="large"
+                  disabled={urlImportLoading || !reviewText.trim() || inputTooLarge}
+                  startIcon={urlImportLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                >
+                  {urlImportLoading ? 'Importing...' : 'Import reviews'}
+                </Button>
+                <Button
                   onClick={handleRawDataExtract}
                   variant="outlined"
                   size="large"
-                  disabled={extractLoading || !reviewText.trim() || inputTooLarge}
+                  disabled={extractLoading || urlImportLoading || !reviewText.trim() || inputTooLarge}
                 >
                   Extract from raw text
                 </Button>
@@ -531,7 +580,7 @@ const Search = () => {
                   variant="contained"
                   color="secondary"
                   size="large"
-                  disabled={loading || inputTooLarge}
+                  disabled={loading || urlImportLoading || inputTooLarge}
                   startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
                   {loading ? 'Analyzing...' : 'Analyze reviews'}

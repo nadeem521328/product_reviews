@@ -7,3 +7,4 @@ flask-jwt-extended
 flask-sqlalchemy
 werkzeug
 python-dotenv
+requests

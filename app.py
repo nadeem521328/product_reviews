@@ -26,6 +26,7 @@ from sentiment_model_fixed import load_sentiment_model
 from extract_reviews import extract_review_texts
 from feedback_generator import generate_customers_say, generate_aspect_customers_say
 from rating import calculate_star_rating, get_star_display, calculate_average_rating
+from providers.url_review_provider import URLReviewProviderError, get_reviews_for_amazon_url
 import pandas as pd
 from jwt.exceptions import InvalidTokenError
 
@@ -181,6 +182,41 @@ class AnalysisHistory(db.Model):
     original_review_text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+
+class PendingAnalysis(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True, index=True)
+    original_review_text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+def queue_analysis_for_later_history(user_id, review_text):
+    """
+    Keep the current dashboard entry out of history until the next analysis.
+
+    When a user analyzes a new entry, their previous pending entry becomes a
+    history entry, and the new entry becomes the pending/current dashboard item.
+    Because pending entries are stored in SQLite, this also works after restart.
+    """
+    user_id = int(user_id)
+    existing_pending = PendingAnalysis.query.filter_by(user_id=user_id).first()
+
+    if existing_pending:
+        db.session.add(AnalysisHistory(
+            user_id=user_id,
+            original_review_text=existing_pending.original_review_text,
+            created_at=existing_pending.created_at
+        ))
+        existing_pending.original_review_text = review_text
+        existing_pending.created_at = datetime.utcnow()
+    else:
+        db.session.add(PendingAnalysis(
+            user_id=user_id,
+            original_review_text=review_text
+        ))
+
+    db.session.commit()
+
 with app.app_context():
     db.create_all()
 
@@ -224,6 +260,27 @@ def login():
         })
     return jsonify({'error': 'Invalid credentials'}), 401
 
+@app.route('/import-amazon-reviews', methods=['POST'])
+def import_amazon_reviews():
+    """
+    Import review text from an Amazon product URL.
+
+    This route only prepares plain review lines for the existing review textbox.
+    It does not run sentiment analysis or change the current NLP pipeline.
+    """
+    data = request.get_json(silent=True) or {}
+    product_url = (data.get('url') or data.get('amazon_url') or '').strip()
+
+    if not product_url:
+        return jsonify({'error': 'Amazon product URL is required.'}), 400
+
+    try:
+        result = get_reviews_for_amazon_url(product_url)
+    except URLReviewProviderError as error:
+        return jsonify({'error': str(error)}), 400
+
+    return jsonify(result)
+
 @app.route('/analyze-review', methods=['POST'])
 def analyze_review():
     if debug_logs:
@@ -245,14 +302,6 @@ def analyze_review():
 
     if not review_text:
         return jsonify({'error': 'No review text provided'}), 400
-
-    if current_user_id and cleaned_review_text:
-        history_entry = AnalysisHistory(
-            user_id=int(current_user_id),
-            original_review_text=cleaned_review_text
-        )
-        db.session.add(history_entry)
-        db.session.commit()
 
     # Extract review bodies from raw marketplace text when possible.
     reviews_list = normalize_reviews(review_text)
@@ -340,6 +389,9 @@ def analyze_review():
         'individual_sentiments': individual_results,
         'summary': summary
     }
+
+    if current_user_id and cleaned_review_text:
+        queue_analysis_for_later_history(current_user_id, cleaned_review_text)
 
     return jsonify(response_data)
 
