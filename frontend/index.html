@@ -5,6 +5,41 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product Review Sentiment Analysis</title>
+    <style>
+      :root {
+        color-scheme: light;
+        background: #fcf8f2;
+      }
+
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        background: #141016;
+      }
+
+      html,
+      body,
+      #root {
+        min-height: 100%;
+        background: inherit;
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          var savedMode = localStorage.getItem('themeMode');
+          var mode =
+            savedMode === 'light' || savedMode === 'dark'
+              ? savedMode
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+
+          document.documentElement.dataset.theme = mode;
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,8 @@
 import os
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
-os.environ["HF_TOKEN"] = "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"
+HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
+if HF_TOKEN:
+    os.environ["HF_TOKEN"] = HF_TOKEN
 os.environ["HF_HUB_OFFLINE"] = "1"
 
 from transformers import pipeline

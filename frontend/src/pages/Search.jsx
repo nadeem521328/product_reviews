@@ -16,10 +16,11 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import api, { analyzeReview, importAmazonReviews } from '../services/api';
+import { analyzeReview, importAmazonReviews } from '../services/api';
 import ReviewCounter from '../components/ReviewCounter';
 
 const inputLabels = ['Manual text', 'TXT file', 'CSV file'];
+const LATEST_ANALYSIS_STORAGE_KEY = 'latestAnalysis';
 const OPTIONAL_NOISE_PATTERNS = [
   /^Click to play video$/i,
   /^Customer image(?:s)?$/i,
@@ -117,6 +118,14 @@ const extractReviewTexts = (raw) => {
   }
 
   return reviews;
+};
+
+const saveLatestAnalysis = (data) => {
+  try {
+    localStorage.setItem(LATEST_ANALYSIS_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    // Keep dashboard navigation working even if browser storage is unavailable.
+  }
 };
 
 const Search = () => {
@@ -302,28 +311,6 @@ const Search = () => {
     }
   };
 
-  const handleCsvDirectAnalyze = async () => {
-    if (!csvSelectedFile) {
-      setCsvError('No CSV file selected.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('csv_file', csvSelectedFile);
-
-    setLoading(true);
-    setCsvError('');
-    try {
-      const { data } = await api.post('/analyze-csv', formData);
-      navigate('/dashboard', { state: { data } });
-    } catch (err) {
-      setCsvError(err.message);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!reviewText.trim()) {
@@ -338,6 +325,7 @@ const Search = () => {
       const hasRawMarketplaceMarkers = /verified purchase/i.test(rawSource) && /report/i.test(rawSource);
       const reviewTextForAnalysis = hasRawMarketplaceMarkers ? rawSource : reviewText;
       const data = await analyzeReview(reviewTextForAnalysis, rawSource || reviewText);
+      saveLatestAnalysis(data);
       navigate('/dashboard', { state: { data } });
     } catch (err) {
       setError('Error analyzing review. Please try again.');
@@ -543,11 +531,6 @@ const Search = () => {
                     </Typography>
                   )}
                   {csvError && <Alert severity="error" sx={{ mt: 2 }}>{csvError}</Alert>}
-                  {csvSelectedFile && (
-                    <Button sx={{ mt: 2 }} variant="outlined" onClick={handleCsvDirectAnalyze} disabled={loading}>
-                      Direct analyze CSV
-                    </Button>
-                  )}
                 </Box>
               )}
 

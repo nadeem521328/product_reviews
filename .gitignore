@@ -1,22 +1,64 @@
-# Virtual environment
+# =========================
+# Python
+# =========================
 .venv/
-
-# Node
-frontend/node_modules/
-node_modules/
-
-# Python cache
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# VS Code
-.vscode/
+# =========================
+# Flask
+# =========================
+instance/
+*.db
+*.sqlite
+*.sqlite3
 
-# Environment file
+# =========================
+# Environment Variables
+# =========================
 .env
+.env.*
+!.env.example
 
-# Models
+# =========================
+# Node / React
+# =========================
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+build/
+frontend/dist/
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# ML Models
+# =========================
 *.pt
 *.bin
 *.pkl
 *.h5
+
+# Hugging Face cache
+model_cache/
+.cache/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db

@@ -9,10 +9,21 @@ import ReviewsList from '../components/ReviewsList';
 import TotalReviews from '../components/TotalReviews';
 import StarRating from '../components/StarRating';
 
+const LATEST_ANALYSIS_STORAGE_KEY = 'latestAnalysis';
+
+const loadLatestAnalysis = () => {
+  try {
+    const stored = localStorage.getItem(LATEST_ANALYSIS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
 const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const data = location.state?.data;
+  const data = location.state?.data || loadLatestAnalysis();
 
   if (!data) {
     return (

@@ -1,6 +1,8 @@
+import os
+
 import requests
 
-API_KEY = "1B18FFF59D1744DBAAA58461F5C7351F"
+API_KEY = os.getenv("RAINFOREST_API_KEY", "").strip()
 ASIN = "B0872G2MPV"
 DOMAIN = "amazon.in"  # or amazon.in
 
