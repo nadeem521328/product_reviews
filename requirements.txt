@@ -8,3 +8,4 @@ flask-sqlalchemy
 werkzeug
 python-dotenv
 requests
+gunicorn
