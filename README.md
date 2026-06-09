@@ -76,6 +76,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
+`requirements.txt` is configured to install `torch==2.11.0` from the official PyTorch CPU wheel index. This avoids the large NVIDIA/CUDA dependencies that are not needed by this app.
+
 ### Frontend
 
 ```bash
@@ -83,6 +85,33 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Render Deployment
+
+Use these settings for the Flask backend on Render:
+
+```bash
+# Build Command
+pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
+```
+
+```bash
+# Start Command
+gunicorn app:app
+```
+
+Required environment variables:
+
+```env
+JWT_SECRET_KEY=your_strong_secret_here
+DATABASE_URL=sqlite:///users.db
+CORS_ORIGINS=https://your-frontend-domain.com
+SENTIMENT_MODEL_NAME=cardiffnlp/twitter-roberta-base-sentiment
+MODEL_CACHE_DIR=./model_cache
+SENTIMENT_MODEL_OFFLINE=0
+```
+
+The app does not use CUDA or GPU-specific PyTorch APIs, so CPU-only PyTorch is compatible with the current sentiment pipeline.
 
 ## Future Enhancements
 
