@@ -65,9 +65,17 @@ cors_origins = _parse_origins(os.getenv('CORS_ORIGINS'))
 CORS(app, origins=cors_origins)
 debug_logs = _is_truthy(os.getenv('DEBUG_LOGS'), default=False)
 
-# Fixed model loader (offline cache)
-sentiment_analyzer = load_sentiment_model()
-print(f"App startup analyzer loaded: {sentiment_analyzer is not None}")
+# Sentiment model is loaded lazily on the first analysis request.
+sentiment_analyzer = None
+
+
+def get_sentiment_analyzer():
+    global sentiment_analyzer
+    if sentiment_analyzer is None:
+        print("Loading sentiment model for the first analysis request...")
+        sentiment_analyzer = load_sentiment_model()
+        print(f"Sentiment analyzer loaded: {sentiment_analyzer is not None}")
+    return sentiment_analyzer
 
 
 def classify_with_threshold(result):
@@ -126,13 +134,14 @@ def analyze_review_lines(review_text):
     neutral = 0
     negative = 0
     individual_results = []
+    analyzer = get_sentiment_analyzer()
 
     for i, review in enumerate(reviews, start=1):
         review_to_analyze = review[:2000] if len(review) > 2000 else review
-        if sentiment_analyzer is None:
+        if analyzer is None:
             sentiment, confidence = classify_with_keyword_fallback(review_to_analyze)
         else:
-            result = sentiment_analyzer(review_to_analyze)[0]
+            result = analyzer(review_to_analyze)[0]
             sentiment, confidence = classify_with_threshold(result)
             if debug_logs:
                 print(f"DEBUG Review {i}: raw={result}, classified={sentiment}({confidence:.3f})")
@@ -285,7 +294,7 @@ def import_amazon_reviews():
 def analyze_review():
     if debug_logs:
         print("=== DEBUG /analyze-review ===")
-        print(f"DEBUG: sentiment_analyzer active: {sentiment_analyzer is not None}")
+        print(f"DEBUG: sentiment_analyzer active: {get_sentiment_analyzer() is not None}")
         print(f"Content-Type: '{request.headers.get('Content-Type')}'")
         print("============================")
     data = request.get_json()
