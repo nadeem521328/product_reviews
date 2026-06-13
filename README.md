@@ -1,84 +1,98 @@
 # SentimentScope
 
-A full-stack customer review intelligence platform built with **React, Flask, Python, NLP, and Hugging Face Transformers**.
+AI-powered customer review intelligence platform that analyzes product reviews, detects sentiment, extracts product aspects, generates star ratings, and provides actionable customer insights through an interactive analytics dashboard.
 
-The application helps users analyze customer reviews, identify sentiment trends, detect product aspects, generate star ratings, and visualize insights through an interactive dashboard.
+## Live Demo
 
-## Overview
+Frontend:
+https://YOUR-VERCEL-URL.vercel.app
 
-SentimentScope transforms raw customer reviews into actionable insights.
-
-Users can analyze reviews from manual text input, TXT files, CSV datasets, or Amazon product review imports. The platform uses a transformer-based sentiment model and presents results through dashboards, charts, aspect analysis, and exportable history.
+Backend API:
+https://nadeemshaik-r3-product-review-sentiment.hf.space
 
 ## Key Features
 
-### Customer Features
-
-* User registration and login with JWT authentication
-* Review analysis from text, TXT, CSV, and Amazon URLs
-* Sentiment classification (Positive, Neutral, Negative)
-* Aspect-based sentiment analysis
-* Automatic star rating generation
-* Interactive dashboard with charts and summaries
-* Analysis history tracking
-* Excel export support
-* Light and dark mode
+* JWT Authentication
+* Review Analysis from Text, TXT, CSV, and Amazon URLs
+* Transformer-Based Sentiment Analysis
+* Aspect-Based Review Intelligence
+* Automatic Star Rating Generation
+* Interactive Analytics Dashboard
+* Analysis History Tracking
+* Excel Export Functionality
+* Dark/Light Mode Support
 
 ## Tech Stack
 
-| Layer          | Technology                         |
-| -------------- | ---------------------------------- |
-| Frontend       | React, Vite, Material UI           |
-| Backend        | Flask, Python                      |
-| Database       | SQLite, SQLAlchemy                 |
-| Authentication | JWT                                |
-| NLP            | Hugging Face Transformers, PyTorch |
-| Charts         | Recharts                           |
-| Deployment     | Vercel + Flask Hosting             |
+### Frontend
+
+* React
+* Vite
+* Material UI
+* Recharts
+
+### Backend
+
+* Flask
+* SQLAlchemy
+* JWT Authentication
+
+### AI / NLP
+
+* Hugging Face Transformers
+* PyTorch
+* RoBERTa Sentiment Model
+
+### Deployment
+
+* Vercel (Frontend)
+* Hugging Face Spaces (Backend)
 
 ## Architecture
 
 ```text
-React Frontend
-      ↓
+User
+ ↓
+React + Vite Frontend
+ ↓
 Flask REST API
-      ↓
-Sentiment Analysis Engine
-      ↓
+ ↓
+RoBERTa Sentiment Model
+ ↓
 SQLite Database
-      ↓
-Dashboard & Analytics
 ```
 
-## Security Highlights
+## Run the Project Locally
 
-* JWT-based authentication
-* Password hashing with Werkzeug
-* Protected routes and APIs
-* Configurable CORS policies
-* Environment variable based configuration
+To run SentimentScope on your machine:
 
-## Project Highlights
-
-* Built a complete full-stack review analytics platform.
-* Integrated Hugging Face transformer models into a Flask API.
-* Designed multiple review ingestion methods including Amazon review imports.
-* Implemented aspect-based sentiment analysis and rating generation.
-* Created dashboard visualizations for sentiment insights and trends.
-* Developed exportable analysis history for user reporting.
-
-## Setup
-
-### Backend
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/nadeem521328/product_reviews.git
+cd product_reviews
+```
+
+### 2. Start the Backend
+
+Create and activate a virtual environment, install the dependencies, and run the Flask server:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
 
-`requirements.txt` is configured to install `torch==2.11.0` from the official PyTorch CPU wheel index. This avoids the large NVIDIA/CUDA dependencies that are not needed by this app.
+The backend will be available at:
 
-### Frontend
+```text
+http://localhost:5000
+```
+
+### 3. Start the Frontend
+
+Open a new terminal and run:
 
 ```bash
 cd frontend
@@ -86,40 +100,14 @@ npm install
 npm run dev
 ```
 
-## Render Deployment
+The frontend will be available at:
 
-Use these settings for the Flask backend on Render:
-
-```bash
-# Build Command
-pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
+```text
+http://localhost:5173
 ```
 
-```bash
-# Start Command
-gunicorn app:app
-```
+You can now register an account, log in, and start analyzing reviews locally.
 
-Required environment variables:
-
-```env
-JWT_SECRET_KEY=your_strong_secret_here
-DATABASE_URL=sqlite:///users.db
-CORS_ORIGINS=https://your-frontend-domain.com
-SENTIMENT_MODEL_NAME=cardiffnlp/twitter-roberta-base-sentiment
-MODEL_CACHE_DIR=./model_cache
-SENTIMENT_MODEL_OFFLINE=0
-```
-
-The app does not use CUDA or GPU-specific PyTorch APIs, so CPU-only PyTorch is compatible with the current sentiment pipeline.
-
-## Future Enhancements
-
-* PostgreSQL support
-* Automated testing
-* Background inference processing
-* Advanced NLP models
-* Real-time analytics
 
 ## Author
 
