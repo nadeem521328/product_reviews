@@ -5,7 +5,7 @@ AI-powered customer review intelligence platform that analyzes product reviews, 
 ## Live Demo
 
 Frontend:
-https://YOUR-VERCEL-URL.vercel.app
+https://sentiment-scope-kappa.vercel.app
 
 Backend API:
 https://nadeemshaik-r3-product-review-sentiment.hf.space
